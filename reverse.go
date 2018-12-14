@@ -21,7 +21,8 @@ usage:
 func forward(conn net.Conn) {
 	defer conn.Close()
 
-	buf := make([]byte, 100)
+	// TODO: make the buffer growable
+	buf := make([]byte, 96)
 	reqLen, err := conn.Read(buf)
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Error reading")

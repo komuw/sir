@@ -44,7 +44,7 @@ func handleRequest(conn net.Conn) {
 	defer conn.Close()
 
 	// TODO: make the buffer growable
-	buf := make([]byte, 100)
+	buf := make([]byte, 96)
 	reqLen, err := conn.Read(buf)
 	if err != nil {
 		err = errors.Wrap(err, "Proxyd Error reading")
