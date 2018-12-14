@@ -32,6 +32,7 @@ func forward(conn net.Conn) {
 	log.Println("Reverse read::", buf)
 	log.Println("Reverse read2::", string(buf))
 
+	// TODO: since we also want to dbscan the responses, we should make a copy here also.
 	client, err := net.Dial("tcp", os.Args[2])
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Dial failed")
