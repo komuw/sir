@@ -52,8 +52,8 @@ func handleRequest(conn net.Conn) {
 	}
 	_ = reqLen
 
-	log.Println("received::", buf)
-	log.Println("received2::", string(buf))
+	log.Println("Proxyd read::", buf)
+	log.Println("Proxyd read2::", string(buf))
 
 	conn.Write([]byte("Message received."))
 }
