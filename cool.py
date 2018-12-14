@@ -1,3 +1,7 @@
+# DOCS:
+# 1. https://www.google.com/url?q=https%3A%2F%2Fscikit-learn.org%2Fstable%2Fauto_examples%2Fcluster%2Fplot_dbscan.html%23sphx-glr-auto-examples-cluster-plot-dbscan-py&sa=D&sntz=1&usg=AFQjCNG5knjPH6-c706IZxq6V7DfZrFJVg
+# 2. https://www.youtube.com/watch?v=vN5dAZrS58E
+
 import numpy as np
 
 from sklearn.cluster import DBSCAN
