@@ -86,7 +86,7 @@ func main() {
 			s.GlyphStyle.Color = color0
 			s.GlyphStyle.Shape = draw.CircleGlyph{}
 			p.Add(s)
-			//p.Legend.Add(fmt.Sprintf("scatter %d", cl), s)
+			// p.Legend.Add(fmt.Sprintf("scatter %d", cl), s)
 
 		}
 
