@@ -1,6 +1,7 @@
 package main
 
-// https://godoc.org/github.com/pa-m/sklearn/cluster
+// 1. https://godoc.org/github.com/pa-m/sklearn/cluster
+// 2. https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/
 
 import (
 	"bytes"

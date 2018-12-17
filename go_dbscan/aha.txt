@@ -7,8 +7,8 @@ import (
 	"log"
 
 	"github.com/pa-m/sklearn/cluster"
-	"github.com/pa-m/sklearn/datasets"
-	"github.com/pa-m/sklearn/preprocessing"
+	// "github.com/pa-m/sklearn/datasets"
+	// "github.com/pa-m/sklearn/preprocessing"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -17,6 +17,8 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 
 	"github.com/pkg/errors"
+
+	"github.com/sanity-io/litter"
 )
 
 var visualDebug = flag.Bool("visual", false, "output images for benchmarks and test data")
@@ -28,13 +30,59 @@ func main() {
 
 	// adapted from http://scikit-learn.org/stable/_downloads/plot_dbscan.ipynb
 	// Generate sample data
-	centers := mat.NewDense(3, 2, []float64{1, 1, -1, -1, 1, -1})
-	NSamples := 750
-	X, _ := datasets.MakeBlobs(&datasets.MakeBlobsConfig{NSamples: NSamples, Centers: centers, ClusterStd: .3}) //RandomState: rand.New(rand.NewSource(0)),
+	// centers := mat.NewDense(3, 2, []float64{1, 1, -1, -1, 1, -1})
+	// NSamples := 750
+	// X, _ := datasets.MakeBlobs(&datasets.MakeBlobsConfig{NSamples: NSamples, Centers: centers, ClusterStd: .3}) //RandomState: rand.New(rand.NewSource(0)),
 
-	X, _ = preprocessing.NewStandardScaler().FitTransform(X, nil)
+	// X, _ = preprocessing.NewStandardScaler().FitTransform(X, nil)
 
-	db := cluster.NewDBSCAN(&cluster.DBSCANConfig{Eps: .3, MinSamples: 10, Algorithm: "kd_tree"})
+	// np.array([[1], [2], [3], [7], [8], [80], [123]])
+
+	// a = np.arr­ay([[0, 1, 2], [3, 4, 5]], dtype=­'fl­oat­64')
+	// X = mat.NewDense(7, 1, []float64{ 1,2,3,7,8,80,123})
+
+	// np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
+
+	// X := mat.NewDense(6, 2, []float64{1,2,2,2,2,3,8,7,8,8,25,80})
+
+	z1 := []byte("komu")
+	z2 := []byte("nomu")
+	z3 := []byte("iomu")
+	z4 := []byte("komr")
+	z5 := []byte("komt")
+	z6 := []byte("komx")
+	z7 := []byte("komg")
+
+	// X = np.array([z1, z2, z3, z4, z5, z6, z7])
+
+	c := make([]float64, 0)
+	for _, v := range z1 {
+		c = append(c, float64(v))
+	}
+	for _, v := range z2 {
+		c = append(c, float64(v))
+	}
+	for _, v := range z3 {
+		c = append(c, float64(v))
+	}
+	for _, v := range z4 {
+		c = append(c, float64(v))
+	}
+	for _, v := range z5 {
+		c = append(c, float64(v))
+	}
+	for _, v := range z6 {
+		c = append(c, float64(v))
+	}
+	for _, v := range z7 {
+		c = append(c, float64(v))
+	}
+
+	X := mat.NewDense(7, 4, c)
+	litter.Dump(c)
+	litter.Dump(len(c))
+
+	db := cluster.NewDBSCAN(&cluster.DBSCANConfig{Eps: 3, MinSamples: 2, Algorithm: ""})
 	db.Fit(X, nil)
 	coreSampleMask := make([]bool, len(db.Labels))
 	for sample := range db.CoreSampleIndices {
@@ -51,14 +99,14 @@ func main() {
 	}
 	fmt.Printf("Estimated number of clusters: %d\n", nclusters)
 
-	if *visualDebug {
+	NSamples := 7
 
+	if *visualDebug {
 		// plot result
 		p, err := plot.New()
 		if err != nil {
 			err = errors.Wrap(err, "error instantiating plot")
 			log.Fatalf("%+v", err)
-
 		}
 		p.Title.Text = fmt.Sprintf("Estimated number of clusters: %d", nclusters)
 		for cl := range labelsmap {
