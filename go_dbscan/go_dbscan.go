@@ -19,6 +19,47 @@ import (
 	"github.com/pkg/errors"
 )
 
+func findClusterMembers(labels []int, X *mat.Dense) error {
+	/*
+		for
+			  X := mat.NewDense(NSamples, 2, []float64{1, 2, 33, 3, 644, 7, 5555, 5})
+			  X.At(i, j) // At returns the element at row i, column j.
+			  X.At(0, 0) == 1
+			  X.At(0, 1) == 2
+			  X.At(0, 2) == Does NOT exist
+			  X.At(1, 0) == 33
+			  X.At(3, 1) == 5
+			  X.At(3, 2) == Does not exist
+			  X.At(4, 0) == Does not exist
+	*/
+
+	// cluster_members :=  map[string][]int
+
+	rows, columns := X.Caps()
+	fmt.Println("rows, columns", rows, columns)
+	for k := range labels {
+		for i := 0; i < columns; i++ {
+			zAt := X.At(k, i)
+			fmt.Println("zAt", zAt)
+		}
+
+	}
+
+	// cluster_members =  map[string]int    //{"noise": []}
+	// for val in labels:
+	//     if val != -1:
+	//         cluster_members.update({str(val): []})
+
+	// for k, v in enumerate(labels):
+	//     if v == -1:
+	//         # noise
+	//         cluster_members["noise"].append(X[k])
+	//     for cluster_members_key in cluster_members.keys():
+	//         if str(v) == cluster_members_key:
+	//             cluster_members[cluster_members_key].append(X[k])
+	return nil
+}
+
 var visualDebug = flag.Bool("visual", false, "output images for benchmarks and test data")
 
 func main() {
@@ -50,6 +91,8 @@ func main() {
 		nclusters--
 	}
 	fmt.Printf("Estimated number of clusters: %d\n", nclusters)
+
+	findClusterMembers(labels, X)
 
 	if *visualDebug {
 
