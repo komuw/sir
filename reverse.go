@@ -1,5 +1,7 @@
 package main
 
+// https://godoc.org/github.com/pa-m/sklearn/cluster
+
 import (
 	"bytes"
 	"io"
