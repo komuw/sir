@@ -97,7 +97,7 @@ func main() {
 	if _, ok := labelsmap[-1]; ok {
 		nclusters--
 	}
-	fmt.Printf("Estimated number of clusters: %d\n", nclusters)
+	log.Printf("Estimated number of clusters: %d\n", nclusters)
 
 	NSamples := 7
 
@@ -108,7 +108,7 @@ func main() {
 			err = errors.Wrap(err, "error instantiating plot")
 			log.Fatalf("\n%+v", err)
 		}
-		p.Title.Text = fmt.Sprintf("Estimated number of clusters: %d", nclusters)
+		p.Title.Text = log.Sprintf("Estimated number of clusters: %d", nclusters)
 		for cl := range labelsmap {
 			var data plotter.XYs
 			for sample := 0; sample < NSamples; sample++ {
@@ -135,7 +135,7 @@ func main() {
 			s.GlyphStyle.Color = color0
 			s.GlyphStyle.Shape = draw.CircleGlyph{}
 			p.Add(s)
-			// p.Legend.Add(fmt.Sprintf("scatter %d", cl), s)
+			// p.Legend.Add(log.Sprintf("scatter %d", cl), s)
 
 		}
 

@@ -5,7 +5,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -68,8 +67,8 @@ func forward(reverseProxyConn net.Conn) {
 		err = errors.Wrap(err, "Reverse Unable to read backendBuf")
 		log.Fatalf("\n%+v", err)
 	}
-	fmt.Println("backendBytes:::", backendBytes)
-	fmt.Println("backendBytes2:::", string(backendBytes))
+	log.Println("backendBytes:::", backendBytes)
+	log.Println("backendBytes2:::", string(backendBytes))
 }
 
 func main() {

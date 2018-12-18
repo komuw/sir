@@ -35,12 +35,12 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 	// cluster_members :=  map[string][]int
 
 	rows, columns := X.Caps()
-	fmt.Println("rows, columns", rows, columns)
+	log.Println("rows, columns", rows, columns)
 	for k := range labels {
 		for i := 0; i < columns; i++ {
 			zAt := X.At(k, i)
 			_ = zAt
-			// fmt.Println("zAt", zAt)
+			// log.Println("zAt", zAt)
 		}
 
 	}
@@ -70,7 +70,7 @@ func main() {
 	if _, ok := labelsmap[-1]; ok {
 		nclusters--
 	}
-	fmt.Printf("Estimated number of clusters: %d\n", nclusters)
+	log.Printf("Estimated number of clusters: %d\n", nclusters)
 
 	err := plotResults(labelsmap, NSamples, labels, nclusters, X)
 	if err != nil {
@@ -104,7 +104,7 @@ func plotResults(labelsmap map[int]int, NSamples int, labels []int, nclusters in
 		return errors.Wrap(err, "error instantiating plot")
 
 	}
-	p.Title.Text = fmt.Sprintf("Estimated number of clusters: %d", nclusters)
+	p.Title.Text = log.Sprintf("Estimated number of clusters: %d", nclusters)
 	for cl := range labelsmap {
 		var data plotter.XYs
 		for sample := 0; sample < NSamples; sample++ {
@@ -130,7 +130,7 @@ func plotResults(labelsmap map[int]int, NSamples int, labels []int, nclusters in
 		s.GlyphStyle.Color = color0
 		s.GlyphStyle.Shape = draw.CircleGlyph{}
 		p.Add(s)
-		// p.Legend.Add(fmt.Sprintf("scatter %d", cl), s)
+		// p.Legend.Add(log.Sprintf("scatter %d", cl), s)
 
 	}
 
