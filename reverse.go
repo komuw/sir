@@ -64,14 +64,14 @@ func forward(reverseProxyConn net.Conn) {
 	io.Copy(backendConn, bytes.NewReader(buf))
 	io.Copy(reverseProxyConn, tee)
 
-	zsh, err := ioutil.ReadAll(&backendBuf)
+	backendBytes, err := ioutil.ReadAll(&backendBuf)
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Unable to read backendBuf")
 		log.Fatalf("%+v", err)
 	}
 
-	fmt.Println("zsh:::", zsh)
-	fmt.Println("zsh2:::", string(zsh))
+	fmt.Println("backendBytes:::", backendBytes)
+	fmt.Println("backendBytes2:::", string(backendBytes))
 }
 
 func main() {
