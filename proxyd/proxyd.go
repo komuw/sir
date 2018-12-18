@@ -52,11 +52,11 @@ func handleRequest(conn net.Conn) {
 
 	connBytes, err := ioutil.ReadAll(&connBuf)
 	if err != nil {
-		err = errors.Wrap(err, "Reverse Unable to read connBuf")
+		err = errors.Wrap(err, "Proxyd Unable to read connBuf")
 		log.Fatalf("\n%+v", err)
 	}
-	fmt.Println("Reverse connBytes:::", connBytes)
-	fmt.Println("Reverse connBytes2:::", string(connBytes))
+	fmt.Println("Proxyd connBytes:::", connBytes)
+	fmt.Println("Proxyd connBytes2:::", string(connBytes))
 
 	conn.Write([]byte("Message received."))
 }
