@@ -58,13 +58,18 @@ func forward(reverseProxyConn net.Conn) {
 	}
 	log.Printf("reverseProxyConnected to localhost %v\n", reverseProxyConn)
 
-	var myBuf bytes.Buffer
-	tee := io.TeeReader(backendConn, &myBuf)
+	var backendBuf bytes.Buffer
+	tee := io.TeeReader(backendConn, &backendBuf)
 
 	io.Copy(backendConn, bytes.NewReader(buf))
 	io.Copy(reverseProxyConn, tee)
 
-	zsh, _ := ioutil.ReadAll(&myBuf)
+	zsh, err := ioutil.ReadAll(&backendBuf)
+	if err != nil {
+		err = errors.Wrap(err, "Reverse Unable to read backendBuf")
+		log.Fatalf("%+v", err)
+	}
+
 	fmt.Println("zsh:::", zsh)
 	fmt.Println("zsh2:::", string(zsh))
 }
