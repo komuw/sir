@@ -1,6 +1,10 @@
 package proxyd
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net"
 
@@ -43,17 +47,16 @@ func Run() {
 func handleRequest(conn net.Conn) {
 	defer conn.Close()
 
-	// TODO: make the buffer growable
-	buf := make([]byte, 96)
-	reqLen, err := conn.Read(buf)
+	var connBuf bytes.Buffer
+	io.TeeReader(conn, &connBuf)
+
+	connBytes, err := ioutil.ReadAll(&connBuf)
 	if err != nil {
-		err = errors.Wrap(err, "Proxyd Error reading")
+		err = errors.Wrap(err, "Reverse Unable to read connBuf")
 		log.Fatalf("%+v", err)
 	}
-	_ = reqLen
-
-	log.Println("Proxyd read::", buf)
-	log.Println("Proxyd read2::", string(buf))
+	fmt.Println("connBytes:::", connBytes)
+	fmt.Println("connBytes2:::", string(connBytes))
 
 	conn.Write([]byte("Message received."))
 }
