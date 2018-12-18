@@ -55,8 +55,8 @@ func handleRequest(conn net.Conn) {
 		err = errors.Wrap(err, "Reverse Unable to read connBuf")
 		log.Fatalf("%+v", err)
 	}
-	fmt.Println("connBytes:::", connBytes)
-	fmt.Println("connBytes2:::", string(connBytes))
+	fmt.Println("Reverse connBytes:::", connBytes)
+	fmt.Println("Reverse connBytes2:::", string(connBytes))
 
 	conn.Write([]byte("Message received."))
 }
