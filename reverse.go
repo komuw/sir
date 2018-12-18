@@ -24,18 +24,18 @@ usage:
   echo -n "test out the server" | nc localhost 7777
 */
 
-func forward(conn net.Conn) {
-	defer conn.Close()
-	err := conn.SetDeadline(time.Now().Add(5 * time.Second))
+func forward(reverseProxyConn net.Conn) {
+	defer reverseProxyConn.Close()
+	err := reverseProxyConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
-		err = errors.Wrap(err, "Reverse Unable to set conn deadline")
+		err = errors.Wrap(err, "Reverse Unable to set reverseProxyConn deadline")
 		log.Fatalf("%+v", err)
 	}
 
 	// TODO: make the buffer growable
 	// TODO: use ioutil.ReadAll() for this
 	buf := make([]byte, 96)
-	reqLen, err := conn.Read(buf)
+	reqLen, err := reverseProxyConn.Read(buf)
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Error reading")
 		log.Fatalf("%+v", err)
@@ -56,13 +56,13 @@ func forward(conn net.Conn) {
 		err = errors.Wrap(err, "Reverse Unable to set client deadline")
 		log.Fatalf("%+v", err)
 	}
-	log.Printf("Connected to localhost %v\n", conn)
+	log.Printf("reverseProxyConnected to localhost %v\n", reverseProxyConn)
 
 	var myBuf bytes.Buffer
 	tee := io.TeeReader(client, &myBuf)
 
 	io.Copy(client, bytes.NewReader(buf))
-	io.Copy(conn, tee)
+	io.Copy(reverseProxyConn, tee)
 
 	zsh, _ := ioutil.ReadAll(&myBuf)
 	fmt.Println("zsh:::", zsh)
@@ -86,12 +86,12 @@ func main() {
 	}
 
 	for {
-		conn, err := listener.Accept()
+		reverseProxyConn, err := listener.Accept()
 		if err != nil {
 			err = errors.Wrapf(err, "Reverse failed to accept listener %v", os.Args[1])
 			log.Fatalf("%+v", err)
 		}
-		log.Printf("Accepted connection %v\n", conn)
-		go forward(conn)
+		log.Printf("Accepted reverseProxyConnection %v\n", reverseProxyConn)
+		go forward(reverseProxyConn)
 	}
 }
