@@ -59,10 +59,10 @@ func forward(reverseProxyConn net.Conn) {
 	log.Printf("reverseProxyConnected to localhost %v\n", reverseProxyConn)
 
 	var backendBuf bytes.Buffer
-	tee := io.TeeReader(backendConn, &backendBuf)
+	backendTee := io.TeeReader(backendConn, &backendBuf)
 
 	io.Copy(backendConn, bytes.NewReader(buf))
-	io.Copy(reverseProxyConn, tee)
+	io.Copy(reverseProxyConn, backendTee)
 
 	backendBytes, err := ioutil.ReadAll(&backendBuf)
 	if err != nil {
