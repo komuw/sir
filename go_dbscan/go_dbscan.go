@@ -39,7 +39,8 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 	for k := range labels {
 		for i := 0; i < columns; i++ {
 			zAt := X.At(k, i)
-			fmt.Println("zAt", zAt)
+			_ = zAt
+			// fmt.Println("zAt", zAt)
 		}
 
 	}
@@ -48,14 +49,13 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 
 func main() {
 	// adapted from http://scikit-learn.org/stable/_downloads/plot_dbscan.ipynb
-	// Generate sample data
-	centers := mat.NewDense(3, 2, []float64{1, 1, -1, -1, 1, -1})
+
 	NSamples := 750
-	X, _ := datasets.MakeBlobs(&datasets.MakeBlobsConfig{NSamples: NSamples, Centers: centers, ClusterStd: .3}) //RandomState: rand.New(rand.NewSource(0)),
+	Eps := 1.2 //3.0
+	MinSamples := 2.0
 
-	X, _ = preprocessing.NewStandardScaler().FitTransform(X, nil)
-
-	db := cluster.NewDBSCAN(&cluster.DBSCANConfig{Eps: .3, MinSamples: 10, Algorithm: "kd_tree"})
+	X := getX(NSamples)
+	db := cluster.NewDBSCAN(&cluster.DBSCANConfig{Eps: Eps, MinSamples: MinSamples, Algorithm: ""})
 	db.Fit(X, nil)
 	coreSampleMask := make([]bool, len(db.Labels))
 	for sample := range db.CoreSampleIndices {
@@ -83,6 +83,15 @@ func main() {
 
 	}
 
+}
+
+func getX(NSamples int) *mat.Dense {
+	// Generate sample data
+	centers := mat.NewDense(3, 2, []float64{1, 1, -1, -1, 1, -1})
+	X, _ := datasets.MakeBlobs(&datasets.MakeBlobsConfig{NSamples: NSamples, Centers: centers, ClusterStd: 0.1}) //RandomState: rand.New(rand.NewSource(0)),
+	X, _ = preprocessing.NewStandardScaler().FitTransform(X, nil)
+
+	return X
 }
 
 func plotResults(labelsmap map[int]int, NSamples int, labels []int, nclusters int, X *mat.Dense) error {
