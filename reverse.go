@@ -60,7 +60,6 @@ func forward(reverseProxyConn net.Conn) {
 
 	var backendBuf bytes.Buffer
 	backendTee := io.TeeReader(backendConn, &backendBuf)
-
 	io.Copy(backendConn, bytes.NewReader(buf))
 	io.Copy(reverseProxyConn, backendTee)
 
@@ -69,7 +68,6 @@ func forward(reverseProxyConn net.Conn) {
 		err = errors.Wrap(err, "Reverse Unable to read backendBuf")
 		log.Fatalf("%+v", err)
 	}
-
 	fmt.Println("backendBytes:::", backendBytes)
 	fmt.Println("backendBytes2:::", string(backendBytes))
 }
