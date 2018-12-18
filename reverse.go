@@ -45,23 +45,23 @@ func forward(reverseProxyConn net.Conn) {
 	log.Println("Reverse read2::", string(buf))
 
 	// TODO: since we also want to dbscan the responses, we should make a copy here also.
-	client, err := net.Dial("tcp", os.Args[2])
+	backendConn, err := net.Dial("tcp", os.Args[2])
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Dial failed")
 		log.Fatalf("%+v", err)
 	}
-	defer client.Close()
-	err = client.SetDeadline(time.Now().Add(5 * time.Second))
+	defer backendConn.Close()
+	err = backendConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
-		err = errors.Wrap(err, "Reverse Unable to set client deadline")
+		err = errors.Wrap(err, "Reverse Unable to set backendConn deadline")
 		log.Fatalf("%+v", err)
 	}
 	log.Printf("reverseProxyConnected to localhost %v\n", reverseProxyConn)
 
 	var myBuf bytes.Buffer
-	tee := io.TeeReader(client, &myBuf)
+	tee := io.TeeReader(backendConn, &myBuf)
 
-	io.Copy(client, bytes.NewReader(buf))
+	io.Copy(backendConn, bytes.NewReader(buf))
 	io.Copy(reverseProxyConn, tee)
 
 	zsh, _ := ioutil.ReadAll(&myBuf)
