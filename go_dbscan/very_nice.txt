@@ -46,7 +46,7 @@ func main() {
 		p, err := plot.New()
 		if err != nil {
 			err = errors.Wrap(err, "error instantiating plot")
-			log.Fatalf("%+v", err)
+			log.Fatalf("\n%+v", err)
 		}
 		p.Title.Text = fmt.Sprintf("Estimated number of clusters: %d", nclusters)
 		for cl := range labelsmap {
@@ -59,7 +59,7 @@ func main() {
 			s, err := plotter.NewScatter(data)
 			if err != nil {
 				err = errors.Wrap(err, "error instantiating plotter.NewScatter")
-				log.Fatalf("%+v", err)
+				log.Fatalf("\n%+v", err)
 			}
 
 			var color0 color.RGBA
@@ -82,7 +82,7 @@ func main() {
 
 		if err := p.Save(6*vg.Inch, 4*vg.Inch, pngfile); err != nil {
 			err = errors.Wrap(err, "error saving png")
-			log.Fatalf("%+v", err)
+			log.Fatalf("\n%+v", err)
 		}
 
 	}

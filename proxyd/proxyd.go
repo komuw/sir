@@ -28,7 +28,7 @@ func Run() {
 	l, err := net.Listen(connType, connHost+":"+connPort)
 	if err != nil {
 		err = errors.Wrap(err, "Proxyd Error listening")
-		log.Fatalf("%+v", err)
+		log.Fatalf("\n%+v", err)
 	}
 	defer l.Close()
 
@@ -38,7 +38,7 @@ func Run() {
 		conn, err := l.Accept()
 		if err != nil {
 			err = errors.Wrap(err, "Proxyd Error accepting")
-			log.Fatalf("%+v", err)
+			log.Fatalf("\n%+v", err)
 		}
 		go handleRequest(conn)
 	}
@@ -53,7 +53,7 @@ func handleRequest(conn net.Conn) {
 	connBytes, err := ioutil.ReadAll(&connBuf)
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Unable to read connBuf")
-		log.Fatalf("%+v", err)
+		log.Fatalf("\n%+v", err)
 	}
 	fmt.Println("Reverse connBytes:::", connBytes)
 	fmt.Println("Reverse connBytes2:::", string(connBytes))

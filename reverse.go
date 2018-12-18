@@ -29,7 +29,7 @@ func forward(reverseProxyConn net.Conn) {
 	err := reverseProxyConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Unable to set reverseProxyConn deadline")
-		log.Fatalf("%+v", err)
+		log.Fatalf("\n%+v", err)
 	}
 
 	// TODO: make the buffer growable
@@ -38,7 +38,7 @@ func forward(reverseProxyConn net.Conn) {
 	reqLen, err := reverseProxyConn.Read(buf)
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Error reading")
-		log.Fatalf("%+v", err)
+		log.Fatalf("\n%+v", err)
 	}
 	_ = reqLen
 	log.Println("Reverse read::", buf)
@@ -48,13 +48,13 @@ func forward(reverseProxyConn net.Conn) {
 	backendConn, err := net.Dial("tcp", os.Args[2])
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Dial failed")
-		log.Fatalf("%+v", err)
+		log.Fatalf("\n%+v", err)
 	}
 	defer backendConn.Close()
 	err = backendConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Unable to set backendConn deadline")
-		log.Fatalf("%+v", err)
+		log.Fatalf("\n%+v", err)
 	}
 	log.Printf("reverseProxyConnected to localhost %v\n", reverseProxyConn)
 
@@ -66,7 +66,7 @@ func forward(reverseProxyConn net.Conn) {
 	backendBytes, err := ioutil.ReadAll(&backendBuf)
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Unable to read backendBuf")
-		log.Fatalf("%+v", err)
+		log.Fatalf("\n%+v", err)
 	}
 	fmt.Println("backendBytes:::", backendBytes)
 	fmt.Println("backendBytes2:::", string(backendBytes))
@@ -78,21 +78,21 @@ func main() {
 	}
 
 	if len(os.Args) != 3 {
-		log.Fatalf("Reverse Usage %+v listen:port forward:port\n", os.Args[0])
+		log.Fatalf("\nReverse Usage %+v listen:port forward:port\n", os.Args[0])
 		return
 	}
 
 	listener, err := net.Listen("tcp", os.Args[1])
 	if err != nil {
 		err = errors.Wrapf(err, "Reverse failed to setup listener %v", os.Args[1])
-		log.Fatalf("%+v", err)
+		log.Fatalf("\n%+v", err)
 	}
 
 	for {
 		reverseProxyConn, err := listener.Accept()
 		if err != nil {
 			err = errors.Wrapf(err, "Reverse failed to accept listener %v", os.Args[1])
-			log.Fatalf("%+v", err)
+			log.Fatalf("\n%+v", err)
 		}
 		log.Printf("Accepted reverseProxyConnection %v\n", reverseProxyConn)
 		go forward(reverseProxyConn)

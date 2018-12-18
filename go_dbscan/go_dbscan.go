@@ -74,12 +74,12 @@ func main() {
 
 	err := plotResults(labelsmap, NSamples, labels, nclusters, X)
 	if err != nil {
-		log.Fatalf("%+v", err)
+		log.Fatalf("\n%+v", err)
 
 	}
 	err = findClusterMembers(labels, X)
 	if err != nil {
-		log.Fatalf("%+v", err)
+		log.Fatalf("\n%+v", err)
 
 	}
 
