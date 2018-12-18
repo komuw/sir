@@ -5,10 +5,13 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
+	"time"
 
 	"github.com/komuw/dbscan/proxyd"
 	"github.com/pkg/errors"
@@ -42,10 +45,22 @@ func forward(conn net.Conn) {
 		log.Fatalf("%+v", err)
 	}
 	defer client.Close()
+	err = client.SetDeadline(time.Now().Add(3 * time.Second))
+	if err != nil {
+		err = errors.Wrap(err, "Reverse Unable to set client deadline")
+		log.Fatalf("%+v", err)
+	}
 	log.Printf("Connected to localhost %v\n", conn)
 
+	var myBuf bytes.Buffer
+	tee := io.TeeReader(client, &myBuf)
+
 	io.Copy(client, bytes.NewReader(buf))
-	io.Copy(conn, client)
+	io.Copy(conn, tee)
+
+	zsh, _ := ioutil.ReadAll(&myBuf)
+	fmt.Println("zsh:::", zsh)
+	fmt.Println("zsh2:::", string(zsh))
 }
 
 func main() {
