@@ -26,6 +26,11 @@ usage:
 
 func forward(conn net.Conn) {
 	defer conn.Close()
+	err := conn.SetDeadline(time.Now().Add(5 * time.Second))
+	if err != nil {
+		err = errors.Wrap(err, "Reverse Unable to set conn deadline")
+		log.Fatalf("%+v", err)
+	}
 
 	// TODO: make the buffer growable
 	// TODO: use ioutil.ReadAll() for this
@@ -46,7 +51,7 @@ func forward(conn net.Conn) {
 		log.Fatalf("%+v", err)
 	}
 	defer client.Close()
-	err = client.SetDeadline(time.Now().Add(3 * time.Second))
+	err = client.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Unable to set client deadline")
 		log.Fatalf("%+v", err)
