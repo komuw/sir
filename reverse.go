@@ -25,6 +25,7 @@ func forward(conn net.Conn) {
 	defer conn.Close()
 
 	// TODO: make the buffer growable
+	// TODO: use ioutil.ReadAll() for this
 	buf := make([]byte, 96)
 	reqLen, err := conn.Read(buf)
 	if err != nil {
