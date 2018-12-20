@@ -1,29 +1,43 @@
 #!/bin/bash
 
-for i in {1..50}
+# usage
+# go run -race reverse.go -p localhost:7777 -r httpbin.org:80
+# bash send_curl.sh
+
+for i in {1..22}
 do
-   MYSTR1="test out the server"
-   printf "\n sending request:: $MYSTR1 \n"
-   curl -vIkL -H "Host: google.com" localhost:7777
+   printf "\n sending request:: \n"
+   curl -vkL \
+   -H "accept: application/json" \
+   -H "Content-Type: application/json" \
+   -H "Host: httpbin.org" \
+   -d '{"name":"komu"}' \
+   localhost:7777/post
 done
 
-for i in {1..37}
+for i in {1..17}
 do
-   MYSTR2="something different"
-   printf "\n sending request:: $MYSTR2 \n"
-   curl -vIkL -H "Host: google.com" localhost:7777
+   printf "\n sending request:: \n"
+   curl -vkL \
+   -H "accept: application/json" \
+   -H "Content-Type: application/json" \
+   -H "Host: httpbin.org" \
+   -d '{"name":"juma"}' \
+   localhost:7777/post
 done
 
 for i in {1..11}
 do
-   MYSTR3="hhhhhhhhh aaaaaaaaa"
-   printf "\n sending request:: $MYSTR3 \n"
-   curl -vIkL -H "Host: google.com" localhost:7777
+   printf "\n sending request:: \n"
+   curl -vkL \
+   -H "accept: application/json" \
+   -H "Content-Type: application/json" \
+   -H "Host: httpbin.org" \
+   -d '{"name":"john"}' \
+   localhost:7777/post
 done
 
-# The above produces a cluster of three.
-
 # Note: for this to work with our current dbscan code;
-# len($MYSTR1) == len($MYSTR2)
-# ie,
-# len("test out the server")  == len("something different")
+# the Content-Length of the 3 requests should be the same.
+# thats why we have used;
+# -d '{"name":"komu"}', -d '{"name":"juma"}', -d '{"name":"john"}'

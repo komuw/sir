@@ -25,8 +25,13 @@ usage:
   echo -n "test out the server" | nc localhost 7777
 
   2.
-  go run -race reverse.go -p localhost:7777 -r google.com:80
-  curl -vIkL -H "Host: google.com" localhost:7777
+  go run -race reverse.go -p localhost:7777 -r httpbin.org:80
+  curl -vkL \
+	-H "accept: application/json" \
+	-H "Content-Type: application/json" \
+	-H "Host: httpbin.org" \
+	-d '{"name":"komu"}' \
+	localhost:7777/post
 */
 
 // TODO: do the same for responses
@@ -62,7 +67,7 @@ func forward(reverseProxyConn net.Conn, remoteAddr string) {
 
 	// TODO: make the buffer growable
 	// TODO: use ioutil.ReadAll() for this
-	requestBuf := make([]byte, 96)
+	requestBuf := make([]byte, 512)
 	reqLen, err := reverseProxyConn.Read(requestBuf)
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Error reading")
