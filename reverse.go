@@ -6,6 +6,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -96,6 +97,7 @@ func forward(reverseProxyConn net.Conn, remoteAddr string) {
 }
 
 func cooler() {
+	fmt.Println("noOfAllRequests, lengthOfEachRequest, allRequests", noOfAllRequests, lengthOfEachRequest, allRequests)
 	heart.Run(noOfAllRequests, lengthOfEachRequest, allRequests, 3.0, 1.0, false)
 }
 
@@ -126,7 +128,7 @@ func main() {
 	log.Println("Reverse Listening on " + p)
 
 	{
-		time.AfterFunc(12*time.Second, cooler)
+		time.AfterFunc(8*time.Second, cooler)
 	}
 
 	for {
