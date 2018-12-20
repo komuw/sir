@@ -1,6 +1,7 @@
 package proxyd
 
 import (
+	"bytes"
 	"log"
 	"net"
 
@@ -27,6 +28,8 @@ func Run(addr string) {
 	}
 }
 
+const nulByte = "\x00"
+
 func handleRequest(conn net.Conn) {
 	defer conn.Close()
 
@@ -38,6 +41,7 @@ func handleRequest(conn net.Conn) {
 		log.Fatalf("\n%+v", err)
 	}
 	_ = reqLen
+	buf = bytes.Trim(buf, nulByte)
 	log.Println("Proxyd read::", buf)
 	log.Println("Proxyd read2::", string(buf))
 

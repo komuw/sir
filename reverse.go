@@ -10,33 +10,47 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/komuw/dbscan/heart"
-	"github.com/komuw/dbscan/proxyd"
 	"github.com/pkg/errors"
 )
 
 /*
 usage:
+  1.
   go run -race reverse.go -p localhost:7777 -r localhost:3333
   curl -vkL localhost:7777
   echo -n "test out the server" | nc localhost 7777
+
+  2.
+  go run -race reverse.go -p localhost:7777 -r google.com:80
+  curl -vIkL -H "Host: google.com" localhost:7777
 */
 
 // TODO: do the same for responses
-var noOfAllRequests = 0
 
-var allRequests []float64
-var lengthOfEachRequest = 0
+type myStruct struct {
+	l                   sync.RWMutex
+	noOfAllRequests     int
+	allRequests         []float64
+	lengthOfEachRequest int
+}
+
+var thisStruct myStruct
 
 func handleRequest(requestBuf []byte) {
-	lengthOfEachRequest = len(requestBuf)
+	thisStruct.l.Lock()
+	defer thisStruct.l.Unlock()
+	thisStruct.lengthOfEachRequest = len(requestBuf)
 
 	for _, v := range requestBuf {
-		allRequests = append(allRequests, float64(v))
+		thisStruct.allRequests = append(thisStruct.allRequests, float64(v))
 	}
 }
+
+const nulByte = "\x00"
 
 func forward(reverseProxyConn net.Conn, remoteAddr string) {
 	defer reverseProxyConn.Close()
@@ -55,8 +69,10 @@ func forward(reverseProxyConn net.Conn, remoteAddr string) {
 		log.Fatalf("\n%+v", err)
 	}
 	_ = reqLen
+	requestBuf = bytes.Trim(requestBuf, nulByte)
 	log.Println("Reverse read::", requestBuf)
 	log.Println("Reverse read2::", string(requestBuf))
+
 	handleRequest(requestBuf)
 
 	// TODO: since we also want to dbscan the responses, we should make a copy here also.
@@ -86,17 +102,20 @@ func forward(reverseProxyConn net.Conn, remoteAddr string) {
 	log.Println("backendBytes:::", backendBytes)
 	log.Println("backendBytes2:::", string(backendBytes))
 
-	noOfAllRequests++
-
-	log.Println("allRequests:", allRequests)
-	log.Println("lengthOfEachRequest:", lengthOfEachRequest)
+	thisStruct.l.Lock()
+	thisStruct.noOfAllRequests++
+	log.Println("allRequests:", thisStruct.allRequests)
+	log.Println("lengthOfEachRequest:", thisStruct.lengthOfEachRequest)
+	thisStruct.l.Unlock()
 
 	// mat.NewDense(noOfAllRequests, lengthOfEachRequest, allRequests)
 
 }
 
 func cooler() {
-	heart.Run(noOfAllRequests, lengthOfEachRequest, allRequests, 3.0, 1.0, false)
+	thisStruct.l.Lock()
+	defer thisStruct.l.Unlock()
+	heart.Run(thisStruct.noOfAllRequests, thisStruct.lengthOfEachRequest, thisStruct.allRequests, 3.0, 1.0, false)
 }
 
 func main() {
@@ -114,9 +133,9 @@ func main() {
 		"the IP:PORT pair to proxy connections to ie the remote server.")
 	flag.Parse()
 
-	{
-		go proxyd.Run(r)
-	}
+	// {
+	// 	go proxyd.Run(r)
+	// }
 
 	listener, err := net.Listen("tcp", p)
 	if err != nil {
@@ -126,7 +145,7 @@ func main() {
 	log.Println("Reverse Listening on " + p)
 
 	{
-		time.AfterFunc(8*time.Second, cooler)
+		time.AfterFunc(57*time.Second, cooler)
 	}
 
 	for {
