@@ -6,7 +6,6 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -97,7 +96,6 @@ func forward(reverseProxyConn net.Conn, remoteAddr string) {
 }
 
 func cooler() {
-	fmt.Println("noOfAllRequests, lengthOfEachRequest, allRequests", noOfAllRequests, lengthOfEachRequest, allRequests)
 	heart.Run(noOfAllRequests, lengthOfEachRequest, allRequests, 3.0, 1.0, false)
 }
 
