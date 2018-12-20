@@ -18,6 +18,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+/*
+usage:
+  go run -race go_dbscan/go_dbscan.go
+*/
+
 func findClusterMembers(labels []int, X *mat.Dense) error {
 	/*
 		for
@@ -104,7 +109,7 @@ func plotResults(labelsmap map[int]int, NSamples int, labels []int, nclusters in
 		return errors.Wrap(err, "error instantiating plot")
 
 	}
-	p.Title.Text = log.Sprintf("Estimated number of clusters: %d", nclusters)
+	p.Title.Text = fmt.Sprintf("Estimated number of clusters: %d", nclusters)
 	for cl := range labelsmap {
 		var data plotter.XYs
 		for sample := 0; sample < NSamples; sample++ {

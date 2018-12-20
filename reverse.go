@@ -23,6 +23,11 @@ usage:
   echo -n "test out the server" | nc localhost 7777
 */
 
+var noOfRequests = 0
+var noOfResponses = 0
+
+var allRequests [][]byte
+
 func forward(reverseProxyConn net.Conn, remoteAddr string) {
 	defer reverseProxyConn.Close()
 	err := reverseProxyConn.SetDeadline(time.Now().Add(5 * time.Second))
@@ -42,6 +47,8 @@ func forward(reverseProxyConn net.Conn, remoteAddr string) {
 	_ = reqLen
 	log.Println("Reverse read::", requestBuf)
 	log.Println("Reverse read2::", string(requestBuf))
+
+	allRequests = append(allRequests, requestBuf)
 
 	// TODO: since we also want to dbscan the responses, we should make a copy here also.
 	backendConn, err := net.Dial("tcp", remoteAddr)
@@ -69,6 +76,11 @@ func forward(reverseProxyConn net.Conn, remoteAddr string) {
 	}
 	log.Println("backendBytes:::", backendBytes)
 	log.Println("backendBytes2:::", string(backendBytes))
+
+	noOfRequests++
+	noOfResponses++
+
+	log.Println("allRequests:", allRequests)
 }
 
 func main() {
