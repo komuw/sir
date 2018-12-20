@@ -5,11 +5,11 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"io"
 	"io/ioutil"
 	"log"
 	"net"
-	"os"
 	"time"
 
 	"github.com/komuw/dbscan/proxyd"
@@ -18,12 +18,12 @@ import (
 
 /*
 usage:
-  go run -race reverse.go localhost:7777 localhost:3333
+  go run -race reverse.go -p localhost:7777 -r localhost:3333
   curl -vkL localhost:7777
   echo -n "test out the server" | nc localhost 7777
 */
 
-func forward(reverseProxyConn net.Conn) {
+func forward(reverseProxyConn net.Conn, remoteAddr string) {
 	defer reverseProxyConn.Close()
 	err := reverseProxyConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
@@ -44,9 +44,9 @@ func forward(reverseProxyConn net.Conn) {
 	log.Println("Reverse read2::", string(buf))
 
 	// TODO: since we also want to dbscan the responses, we should make a copy here also.
-	backendConn, err := net.Dial("tcp", os.Args[2])
+	backendConn, err := net.Dial("tcp", remoteAddr)
 	if err != nil {
-		err = errors.Wrap(err, "Reverse Dial failed")
+		err = errors.Wrap(err, "Reverse Dial failed for address"+remoteAddr)
 		log.Fatalf("\n%+v", err)
 	}
 	defer backendConn.Close()
@@ -72,28 +72,38 @@ func forward(reverseProxyConn net.Conn) {
 }
 
 func main() {
+	var p string
+	var r string
+	flag.StringVar(
+		&p,
+		"p",
+		"localhost:7777",
+		"the IP:PORT pair to bind the proxy to.")
+	flag.StringVar(
+		&r,
+		"r",
+		"localhost:3333",
+		"the IP:PORT pair to proxy connections to ie the remote server.")
+	flag.Parse()
+
 	{
-		go proxyd.Run()
+		go proxyd.Run(r)
 	}
 
-	if len(os.Args) != 3 {
-		log.Fatalf("\nReverse Usage %+v listen:port forward:port\n", os.Args[0])
-		return
-	}
-
-	listener, err := net.Listen("tcp", os.Args[1])
+	listener, err := net.Listen("tcp", p)
 	if err != nil {
-		err = errors.Wrapf(err, "Reverse failed to setup listener %v", os.Args[1])
+		err = errors.Wrapf(err, "Reverse failed to setup listener %v", p)
 		log.Fatalf("\n%+v", err)
 	}
+	log.Println("Reverse Listening on " + p)
 
 	for {
 		reverseProxyConn, err := listener.Accept()
 		if err != nil {
-			err = errors.Wrapf(err, "Reverse failed to accept listener %v", os.Args[1])
+			err = errors.Wrapf(err, "Reverse failed to accept listener %v", p)
 			log.Fatalf("\n%+v", err)
 		}
 		log.Printf("Accepted reverseProxyConnection %v\n", reverseProxyConn)
-		go forward(reverseProxyConn)
+		go forward(reverseProxyConn, r)
 	}
 }
