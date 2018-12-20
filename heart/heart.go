@@ -53,16 +53,19 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 	return nil
 }
 
-
 func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Eps float64, MinSamples float64, autoGenerateSampleData bool) {
 	// adapted from http://scikit-learn.org/stable/_downloads/plot_dbscan.ipynb
+	if lengthOfEachRequest <= 1 {
+		err := errors.New("we cant create a matrix with no dimensions, ie X.At(x, y) will fail")
+		log.Fatalf("\n%+v", err)
+	}
 
 	X := getX(noOfAllRequests, lengthOfEachRequest, allRequests)
 	if autoGenerateSampleData {
-		noOfAllRequests := 750
-		Eps := 1.2 //3.0
-		MinSamples := 2.0
-		X := generateSampleData(noOfAllRequests)
+		noOfAllRequests = 750
+		Eps = 1.2 //3.0
+		MinSamples = 2.0
+		X = generateSampleData(noOfAllRequests)
 	}
 
 	db := cluster.NewDBSCAN(&cluster.DBSCANConfig{Eps: Eps, MinSamples: MinSamples, Algorithm: ""})
@@ -96,9 +99,7 @@ func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Ep
 
 func getX(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64) *mat.Dense {
 	return mat.NewDense(noOfAllRequests, lengthOfEachRequest, allRequests)
-
 }
-
 
 func generateSampleData(noOfAllRequests int) *mat.Dense {
 	// Generate sample data
