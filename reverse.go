@@ -23,10 +23,19 @@ usage:
   echo -n "test out the server" | nc localhost 7777
 */
 
-var noOfRequests = 0
-var noOfResponses = 0
+// TODO: do the same for responses
+var noOfAllRequests = 0
 
-var allRequests [][]byte
+var allRequests []float64
+var lengthOfEachRequest = 0
+
+func handleRequest(requestBuf []byte) {
+	lengthOfEachRequest = len(requestBuf)
+
+	for _, v := range requestBuf {
+		allRequests = append(allRequests, float64(v))
+	}
+}
 
 func forward(reverseProxyConn net.Conn, remoteAddr string) {
 	defer reverseProxyConn.Close()
@@ -47,8 +56,7 @@ func forward(reverseProxyConn net.Conn, remoteAddr string) {
 	_ = reqLen
 	log.Println("Reverse read::", requestBuf)
 	log.Println("Reverse read2::", string(requestBuf))
-
-	allRequests = append(allRequests, requestBuf)
+	handleRequest(requestBuf)
 
 	// TODO: since we also want to dbscan the responses, we should make a copy here also.
 	backendConn, err := net.Dial("tcp", remoteAddr)
@@ -77,10 +85,13 @@ func forward(reverseProxyConn net.Conn, remoteAddr string) {
 	log.Println("backendBytes:::", backendBytes)
 	log.Println("backendBytes2:::", string(backendBytes))
 
-	noOfRequests++
-	noOfResponses++
+	noOfAllRequests++
 
 	log.Println("allRequests:", allRequests)
+	log.Println("lengthOfEachRequest:", lengthOfEachRequest)
+
+	// mat.NewDense(noOfAllRequests, lengthOfEachRequest, allRequests)
+
 }
 
 func main() {
@@ -119,3 +130,38 @@ func main() {
 		go forward(reverseProxyConn, r)
 	}
 }
+
+// z1 := []byte("komu")
+// z2 := []byte("nomu")
+// z3 := []byte("iomu")
+// z4 := []byte("komr")
+// z5 := []byte("komt")
+// z6 := []byte("komx")
+// z7 := []byte("komg")
+
+// // X = np.array([z1, z2, z3, z4, z5, z6, z7])
+
+// c := make([]float64, 0)
+// for _, v := range z1 {
+// 	c = append(c, float64(v))
+// }
+// for _, v := range z2 {
+// 	c = append(c, float64(v))
+// }
+// for _, v := range z3 {
+// 	c = append(c, float64(v))
+// }
+// for _, v := range z4 {
+// 	c = append(c, float64(v))
+// }
+// for _, v := range z5 {
+// 	c = append(c, float64(v))
+// }
+// for _, v := range z6 {
+// 	c = append(c, float64(v))
+// }
+// for _, v := range z7 {
+// 	c = append(c, float64(v))
+// }
+
+// X := mat.NewDense(7, 4, c)

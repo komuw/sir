@@ -1,4 +1,4 @@
-package main
+package heart
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ usage:
 func findClusterMembers(labels []int, X *mat.Dense) error {
 	/*
 		for
-			  X := mat.NewDense(NSamples, 2, []float64{1, 2, 33, 3, 644, 7, 5555, 5})
+			  X := mat.NewDense(noOfAllRequests, 2, []float64{1, 2, 33, 3, 644, 7, 5555, 5})
 			  X.At(i, j) // At returns the element at row i, column j.
 			  X.At(0, 0) == 1
 			  X.At(0, 1) == 2
@@ -53,18 +53,18 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 	return nil
 }
 
-func main() {
-	Run()
-}
 
-func Run() {
+func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Eps float64, MinSamples float64, autoGenerateSampleData bool) {
 	// adapted from http://scikit-learn.org/stable/_downloads/plot_dbscan.ipynb
 
-	NSamples := 750
-	Eps := 1.2 //3.0
-	MinSamples := 2.0
+	X := getX(noOfAllRequests, lengthOfEachRequest, allRequests)
+	if autoGenerateSampleData {
+		noOfAllRequests := 750
+		Eps := 1.2 //3.0
+		MinSamples := 2.0
+		X := generateSampleData(noOfAllRequests)
+	}
 
-	X := generateSampleData(NSamples)
 	db := cluster.NewDBSCAN(&cluster.DBSCANConfig{Eps: Eps, MinSamples: MinSamples, Algorithm: ""})
 	db.Fit(X, nil)
 	coreSampleMask := make([]bool, len(db.Labels))
@@ -82,7 +82,7 @@ func Run() {
 	}
 	log.Printf("Estimated number of clusters: %d\n", nclusters)
 
-	err := PlotResults(labelsmap, NSamples, labels, nclusters, X)
+	err := PlotResults(labelsmap, noOfAllRequests, labels, nclusters, X)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 
@@ -94,16 +94,22 @@ func Run() {
 	}
 }
 
-func generateSampleData(NSamples int) *mat.Dense {
+func getX(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64) *mat.Dense {
+	return mat.NewDense(noOfAllRequests, lengthOfEachRequest, allRequests)
+
+}
+
+
+func generateSampleData(noOfAllRequests int) *mat.Dense {
 	// Generate sample data
 	centers := mat.NewDense(3, 2, []float64{1, 1, -1, -1, 1, -1})
-	X, _ := datasets.MakeBlobs(&datasets.MakeBlobsConfig{NSamples: NSamples, Centers: centers, ClusterStd: 0.1}) //RandomState: rand.New(rand.NewSource(0)),
+	X, _ := datasets.MakeBlobs(&datasets.MakeBlobsConfig{NSamples: noOfAllRequests, Centers: centers, ClusterStd: 0.1}) //RandomState: rand.New(rand.NewSource(0)),
 	X, _ = preprocessing.NewStandardScaler().FitTransform(X, nil)
 
 	return X
 }
 
-func PlotResults(labelsmap map[int]int, NSamples int, labels []int, nclusters int, X *mat.Dense) error {
+func PlotResults(labelsmap map[int]int, noOfAllRequests int, labels []int, nclusters int, X *mat.Dense) error {
 	now := time.Now()
 	// Save the plot to a PNG file.
 	pngfile := now.Format("Jan_2_2006_15_04_05") + ".png"
@@ -117,7 +123,7 @@ func PlotResults(labelsmap map[int]int, NSamples int, labels []int, nclusters in
 	p.Title.Text = fmt.Sprintf("Estimated number of clusters: %d", nclusters)
 	for cl := range labelsmap {
 		var data plotter.XYs
-		for sample := 0; sample < NSamples; sample++ {
+		for sample := 0; sample < noOfAllRequests; sample++ {
 			if labels[sample] == cl {
 				data = append(data, struct{ X, Y float64 }{X.At(sample, 0), X.At(sample, 1)})
 			}
