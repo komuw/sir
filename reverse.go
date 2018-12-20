@@ -33,15 +33,15 @@ func forward(reverseProxyConn net.Conn, remoteAddr string) {
 
 	// TODO: make the buffer growable
 	// TODO: use ioutil.ReadAll() for this
-	buf := make([]byte, 96)
-	reqLen, err := reverseProxyConn.Read(buf)
+	requestBuf := make([]byte, 96)
+	reqLen, err := reverseProxyConn.Read(requestBuf)
 	if err != nil {
 		err = errors.Wrap(err, "Reverse Error reading")
 		log.Fatalf("\n%+v", err)
 	}
 	_ = reqLen
-	log.Println("Reverse read::", buf)
-	log.Println("Reverse read2::", string(buf))
+	log.Println("Reverse read::", requestBuf)
+	log.Println("Reverse read2::", string(requestBuf))
 
 	// TODO: since we also want to dbscan the responses, we should make a copy here also.
 	backendConn, err := net.Dial("tcp", remoteAddr)
@@ -59,7 +59,7 @@ func forward(reverseProxyConn net.Conn, remoteAddr string) {
 
 	var backendBuf bytes.Buffer
 	backendTee := io.TeeReader(backendConn, &backendBuf)
-	io.Copy(backendConn, bytes.NewReader(buf))
+	io.Copy(backendConn, bytes.NewReader(requestBuf))
 	io.Copy(reverseProxyConn, backendTee)
 
 	backendBytes, err := ioutil.ReadAll(&backendBuf)
