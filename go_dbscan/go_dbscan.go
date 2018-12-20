@@ -16,6 +16,7 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 
 	"github.com/pkg/errors"
+	"time"
 )
 
 /*
@@ -77,7 +78,7 @@ func main() {
 	}
 	log.Printf("Estimated number of clusters: %d\n", nclusters)
 
-	err := plotResults(labelsmap, NSamples, labels, nclusters, X)
+	err := PlotResults(labelsmap, NSamples, labels, nclusters, X)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 
@@ -91,17 +92,20 @@ func main() {
 }
 
 func getX(NSamples int) *mat.Dense {
+	
 	// Generate sample data
 	centers := mat.NewDense(3, 2, []float64{1, 1, -1, -1, 1, -1})
 	X, _ := datasets.MakeBlobs(&datasets.MakeBlobsConfig{NSamples: NSamples, Centers: centers, ClusterStd: 0.1}) //RandomState: rand.New(rand.NewSource(0)),
 	X, _ = preprocessing.NewStandardScaler().FitTransform(X, nil)
 
 	return X
+
 }
 
-func plotResults(labelsmap map[int]int, NSamples int, labels []int, nclusters int, X *mat.Dense) error {
+func PlotResults(labelsmap map[int]int, NSamples int, labels []int, nclusters int, X *mat.Dense) error {
+	now := time.Now()
 	// Save the plot to a PNG file.
-	pngfile := "GolangExampleDBSCAN.png"
+	pngfile :=now.Format("Jan_2_2006_15_04_05") + ".png"
 
 	// plot result
 	p, err := plot.New()
