@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # usage
-# go run -race reverse.go -p localhost:7777 -r httpbin.org:80
+# go run -race reverse.go -p localhost:7777 -r httpbin.org:443
 # bash send_curl.sh
 
-for i in {1..22}
+for i in {1..6}
 do
    printf "\n sending request:: \n"
-   curl -vkL \
+   curl -vL \
    -H "accept: application/json" \
    -H "Content-Type: application/json" \
    -H "Host: httpbin.org" \
@@ -15,10 +15,10 @@ do
    localhost:7777/post
 done
 
-for i in {1..17}
+for i in {1..8}
 do
    printf "\n sending request:: \n"
-   curl -vkL \
+   curl -vL \
    -H "accept: application/json" \
    -H "Content-Type: application/json" \
    -H "Host: httpbin.org" \
@@ -29,7 +29,7 @@ done
 for i in {1..11}
 do
    printf "\n sending request:: \n"
-   curl -vkL \
+   curl -vL \
    -H "accept: application/json" \
    -H "Content-Type: application/json" \
    -H "Host: httpbin.org" \

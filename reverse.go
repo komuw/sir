@@ -25,7 +25,7 @@ usage:
   echo -n "test out the server" | nc localhost 7777
 
   2.
-  go run -race reverse.go -p localhost:7777 -r httpbin.org:80
+  go run -race reverse.go -p localhost:7777 -r httpbin.org:443
   curl -vkL \
 	-H "accept: application/json" \
 	-H "Content-Type: application/json" \
@@ -150,7 +150,7 @@ func main() {
 	log.Println("Reverse Listening on " + p)
 
 	{
-		time.AfterFunc(57*time.Second, cooler)
+		time.AfterFunc(23*time.Second, cooler)
 	}
 
 	for {
