@@ -13,35 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-type requestsResponses struct {
-	l                   sync.RWMutex
-	noOfAllRequests     int
-	allRequests         []float64
-	lengthOfEachRequest int
-
-	noOfAllResponses     int
-	allResponses         []float64
-	lengthOfEachResponse int
-}
-
-var reqResp requestsResponses
-
-func clusterAndPlotRequests() {
-	reqResp.l.Lock()
-	defer reqResp.l.Unlock()
-	heart.Run(reqResp.noOfAllRequests, reqResp.lengthOfEachRequest, reqResp.allRequests, 3.0, 1.0, false, "Requests")
-}
-
-func clusterAndPlotResponses() {
-	reqResp.l.Lock()
-	defer reqResp.l.Unlock()
-	heart.Run(reqResp.noOfAllResponses, reqResp.lengthOfEachResponse, reqResp.allResponses, 3.0, 1.0, false, "Responses")
-}
-
 func main() {
 	/*
 		usage:
-		  1. go run -race main.go
+		  1. go run -race cmd/main.go
 		  2. curl -vL -H "Host: httpbin.org" localhost:7777/get
 	*/
 	frontendAddr := "localhost:7777"
@@ -71,6 +46,31 @@ func main() {
 
 		go forward(frontendConn, backendAddr)
 	}
+}
+
+type requestsResponses struct {
+	l                   sync.RWMutex
+	noOfAllRequests     int
+	allRequests         []float64
+	lengthOfEachRequest int
+
+	noOfAllResponses     int
+	allResponses         []float64
+	lengthOfEachResponse int
+}
+
+var reqResp requestsResponses
+
+func clusterAndPlotRequests() {
+	reqResp.l.Lock()
+	defer reqResp.l.Unlock()
+	heart.Run(reqResp.noOfAllRequests, reqResp.lengthOfEachRequest, reqResp.allRequests, 3.0, 1.0, false, "Requests")
+}
+
+func clusterAndPlotResponses() {
+	reqResp.l.Lock()
+	defer reqResp.l.Unlock()
+	heart.Run(reqResp.noOfAllResponses, reqResp.lengthOfEachResponse, reqResp.allResponses, 3.0, 1.0, false, "Responses")
 }
 
 func handleRequest(requestBuf []byte) {
