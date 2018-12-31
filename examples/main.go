@@ -105,7 +105,7 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 
 	//////////////////////////////////// LOG REQUEST ////////////////////////
 	// TODO: make the buffer growable
-	requestBuf := make([]byte, 1024, 1024)
+	requestBuf := make([]byte, 1024)
 	reqLen, err := frontendConn.Read(requestBuf)
 	if err != nil {
 		log.Fatalf("Error reading %+v", err)
@@ -155,27 +155,3 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 	log.Println("lengthOfEachResponse:", reqResp.lengthOfEachResponse)
 	reqResp.l.Unlock()
 }
-
-// Hello.
-// I'm trying to create a TCP reverse proxy.
-// It should work for both http/https/rabbitMQ etc, anything that talks tcp.
-
-// The way it should work is:
-// 1. A client sends requests to it.
-// 2. The reverse proxy logs the resquest(by reading it)
-// 3. The reverse proxy forwards the request to a backend
-// 4. When the backend responds, the reverse proxy logs the response(by reading it)
-// 5. The reverse proxy forwards the response to the client
-
-// I have two problems/questions.
-// 1. In the code to log request
-// `requestBuf := make([]byte, 512)`
-// how do I make the buffer growable?
-// I want to make it possible to handle a request of arbitrary size.
-
-// 2. Why does my reverse proxy fail to work for https?
-// ie, when I set
-// `backendAddr := "httpbin.org:443"`
-// the reverse proxy does not work anymore.
-
-// Thanks
