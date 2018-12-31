@@ -16,7 +16,7 @@ func main() {
 		  2. curl -vL -H "Host: httpbin.org" localhost:7777/get
 	*/
 	frontendAddr := "localhost:7777"
-	backendAddr := "httpbin.org:80"
+	backendAddr := "httpbin.org:80" // why is it that "httpbin.org:443" does not work
 
 	listener, err := net.Listen("tcp", frontendAddr)
 	if err != nil {
@@ -56,7 +56,6 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 	log.Println("we sent request::", requestBuf)
 	log.Println("we sent request::", string(requestBuf))
 
-	// TODO: since we also want to dbscan the responses, we should make a copy here also.
 	backendConn, err := net.Dial("tcp", remoteAddr)
 	if err != nil {
 		msg := "Dial failed for address" + remoteAddr
