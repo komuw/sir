@@ -1,34 +1,22 @@
 package proxyd
 
 import (
+	"bytes"
 	"log"
 	"net"
 
 	"github.com/pkg/errors"
 )
 
-/*
-usage:
-  go run -race proxyd.go
-  echo -n "test out the server" | nc localhost 3333
-  curl -vkIL localhost:3333
-*/
-
-const (
-	connHost = "localhost"
-	connPort = "3333"
-	connType = "tcp"
-)
-
-func Run() {
-	l, err := net.Listen(connType, connHost+":"+connPort)
+func Run(addr string) {
+	l, err := net.Listen("tcp", addr)
 	if err != nil {
 		err = errors.Wrap(err, "Proxyd Error listening")
 		log.Fatalf("\n%+v", err)
 	}
 	defer l.Close()
+	log.Println("Proxyd Listening on " + addr)
 
-	log.Println("Proxyd Listening on " + connHost + ":" + connPort)
 	for {
 		// Listen for an incoming connection.
 		conn, err := l.Accept()
@@ -39,6 +27,8 @@ func Run() {
 		go handleRequest(conn)
 	}
 }
+
+const nulByte = "\x00"
 
 func handleRequest(conn net.Conn) {
 	defer conn.Close()
@@ -51,6 +41,7 @@ func handleRequest(conn net.Conn) {
 		log.Fatalf("\n%+v", err)
 	}
 	_ = reqLen
+	buf = bytes.Trim(buf, nulByte)
 	log.Println("Proxyd read::", buf)
 	log.Println("Proxyd read2::", string(buf))
 
