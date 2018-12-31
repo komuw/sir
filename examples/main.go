@@ -13,10 +13,29 @@ import (
 	"github.com/pkg/errors"
 )
 
-func cooler() {
-	thisStruct.l.Lock()
-	defer thisStruct.l.Unlock()
-	heart.Run(thisStruct.noOfAllRequests, thisStruct.lengthOfEachRequest, thisStruct.allRequests, 3.0, 1.0, false)
+type requestsResponses struct {
+	l                   sync.RWMutex
+	noOfAllRequests     int
+	allRequests         []float64
+	lengthOfEachRequest int
+
+	noOfAllResponses     int
+	allResponses         []float64
+	lengthOfEachResponse int
+}
+
+var reqResp requestsResponses
+
+func clusterAndPlotRequests() {
+	reqResp.l.Lock()
+	defer reqResp.l.Unlock()
+	heart.Run(reqResp.noOfAllRequests, reqResp.lengthOfEachRequest, reqResp.allRequests, 3.0, 1.0, false)
+}
+
+func clusterAndPlotResponses() {
+	reqResp.l.Lock()
+	defer reqResp.l.Unlock()
+	heart.Run(reqResp.noOfAllResponses, reqResp.lengthOfEachResponse, reqResp.allResponses, 3.0, 1.0, false)
 }
 
 func main() {
@@ -39,7 +58,8 @@ func main() {
 	`)
 
 	{
-		time.AfterFunc(23*time.Second, cooler)
+		time.AfterFunc(23*time.Second, clusterAndPlotRequests)
+		time.AfterFunc(23*time.Second, clusterAndPlotResponses)
 	}
 
 	for {
@@ -53,22 +73,23 @@ func main() {
 	}
 }
 
-type myStruct struct {
-	l                   sync.RWMutex
-	noOfAllRequests     int
-	allRequests         []float64
-	lengthOfEachRequest int
-}
-
-var thisStruct myStruct
-
 func handleRequest(requestBuf []byte) {
-	thisStruct.l.Lock()
-	defer thisStruct.l.Unlock()
-	thisStruct.lengthOfEachRequest = len(requestBuf)
+	reqResp.l.Lock()
+	defer reqResp.l.Unlock()
+	reqResp.lengthOfEachRequest = len(requestBuf)
 
 	for _, v := range requestBuf {
-		thisStruct.allRequests = append(thisStruct.allRequests, float64(v))
+		reqResp.allRequests = append(reqResp.allRequests, float64(v))
+	}
+}
+
+func handleResponse(responseBuf []byte) {
+	reqResp.l.Lock()
+	defer reqResp.l.Unlock()
+	reqResp.lengthOfEachResponse = len(responseBuf)
+
+	for _, v := range responseBuf {
+		reqResp.allResponses = append(reqResp.allResponses, float64(v))
 	}
 }
 
@@ -120,15 +141,19 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 		err = errors.Wrap(err, "unable to read backendBuf")
 		log.Fatalf("%+v", err)
 	}
+	handleResponse(backendBytes)
 	log.Println("we got response::", backendBytes)
 	log.Println("we got response::", string(backendBytes))
 	//////////////////////////////////// LOG RESPONSE ////////////////////////
 
-	thisStruct.l.Lock()
-	thisStruct.noOfAllRequests++
-	log.Println("allRequests:", thisStruct.allRequests)
-	log.Println("lengthOfEachRequest:", thisStruct.lengthOfEachRequest)
-	thisStruct.l.Unlock()
+	reqResp.l.Lock()
+	reqResp.noOfAllRequests++
+	reqResp.noOfAllResponses++
+	log.Println("allRequests:", reqResp.allRequests)
+	log.Println("allResponses:", reqResp.allResponses)
+	log.Println("lengthOfEachRequest:", reqResp.lengthOfEachRequest)
+	log.Println("lengthOfEachResponse:", reqResp.lengthOfEachResponse)
+	reqResp.l.Unlock()
 }
 
 // Hello.
