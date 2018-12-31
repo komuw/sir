@@ -57,7 +57,7 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 	return nil
 }
 
-func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Eps float64, MinSamples float64, autoGenerateSampleData bool) {
+func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Eps float64, MinSamples float64, autoGenerateSampleData bool, appendName string) {
 	// adapted from http://scikit-learn.org/stable/_downloads/plot_dbscan.ipynb
 	if lengthOfEachRequest <= 1 {
 		err := errors.New("we cant create a matrix with no dimensions, ie X.At(x, y) will fail")
@@ -89,7 +89,7 @@ func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Ep
 	}
 	log.Printf("Estimated number of clusters: %d\n", nclusters)
 
-	err := PlotResults(labelsmap, noOfAllRequests, labels, nclusters, X)
+	err := PlotResults(labelsmap, noOfAllRequests, labels, nclusters, X, appendName)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 
@@ -114,10 +114,10 @@ func generateSampleData(noOfAllRequests int) *mat.Dense {
 	return X
 }
 
-func PlotResults(labelsmap map[int]int, noOfAllRequests int, labels []int, nclusters int, X *mat.Dense) error {
+func PlotResults(labelsmap map[int]int, noOfAllRequests int, labels []int, nclusters int, X *mat.Dense, appendName string) error {
 	now := time.Now()
 	// Save the plot to a PNG file.
-	pngfile := now.Format("Jan_2_2006_15_04_05") + ".png"
+	pngfile := appendName + "_" + now.Format("Jan_2_2006_15_04_05") + ".png"
 
 	// plot result
 	p, err := plot.New()

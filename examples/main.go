@@ -29,13 +29,13 @@ var reqResp requestsResponses
 func clusterAndPlotRequests() {
 	reqResp.l.Lock()
 	defer reqResp.l.Unlock()
-	heart.Run(reqResp.noOfAllRequests, reqResp.lengthOfEachRequest, reqResp.allRequests, 3.0, 1.0, false)
+	heart.Run(reqResp.noOfAllRequests, reqResp.lengthOfEachRequest, reqResp.allRequests, 3.0, 1.0, false, "Requests")
 }
 
 func clusterAndPlotResponses() {
 	reqResp.l.Lock()
 	defer reqResp.l.Unlock()
-	heart.Run(reqResp.noOfAllResponses, reqResp.lengthOfEachResponse, reqResp.allResponses, 3.0, 1.0, false)
+	heart.Run(reqResp.noOfAllResponses, reqResp.lengthOfEachResponse, reqResp.allResponses, 3.0, 1.0, false, "Responses")
 }
 
 func main() {
