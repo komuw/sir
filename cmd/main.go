@@ -103,20 +103,6 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 		log.Fatalf("%+v", err)
 	}
 
-	//////////////////////////////////// LOG REQUEST ////////////////////////
-	// TODO: make the buffer growable
-	requestBuf := make([]byte, 1024)
-	reqLen, err := frontendConn.Read(requestBuf)
-	if err != nil {
-		log.Fatalf("Error reading %+v", err)
-	}
-	_ = reqLen
-	requestBuf = bytes.Trim(requestBuf, nulByte)
-	handleRequest(requestBuf)
-	log.Println("we sent request::", requestBuf)
-	log.Println("we sent request::", string(requestBuf))
-	//////////////////////////////////// LOG REQUEST ////////////////////////
-
 	backendConn, err := net.Dial("tcp", remoteAddr)
 	if err != nil {
 		err = errors.Wrap(err, "dial failed for address"+remoteAddr)
@@ -130,21 +116,46 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 	}
 	log.Print("frontendConnected")
 
-	var backendBuf bytes.Buffer
-	backendTee := io.TeeReader(backendConn, &backendBuf)
-	io.Copy(backendConn, bytes.NewReader(requestBuf))
-	io.Copy(frontendConn, backendTee)
+	requestBuf := new(bytes.Buffer)
+	responseBuf := new(bytes.Buffer)
+	ch := make(chan bool)
 
-	//////////////////////////////////// LOG RESPONSE ////////////////////////
-	backendBytes, err := ioutil.ReadAll(&backendBuf)
+	// forward data from client to server
+	go func() {
+		tee := io.TeeReader(frontendConn, requestBuf)
+		io.Copy(backendConn, tee)
+		ch <- true
+	}()
+
+	// forward data from server to client
+	go func() {
+		tee := io.TeeReader(backendConn, responseBuf)
+		io.Copy(frontendConn, tee)
+		ch <- true
+	}()
+
+	<-ch
+	<-ch
+	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
+	requestBytes, err := ioutil.ReadAll(requestBuf)
 	if err != nil {
-		err = errors.Wrap(err, "unable to read backendBuf")
+		err = errors.Wrap(err, "unable to read & log request")
 		log.Fatalf("%+v", err)
 	}
-	handleResponse(backendBytes)
-	log.Println("we got response::", backendBytes)
-	log.Println("we got response::", string(backendBytes))
-	//////////////////////////////////// LOG RESPONSE ////////////////////////
+	requestBytes = bytes.Trim(requestBytes, nulByte)
+	handleRequest(requestBytes)
+	log.Println("we sent request::", requestBytes)
+	log.Println("we sent request::", string(requestBytes))
+
+	responseBytes, err := ioutil.ReadAll(responseBuf)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read & log response")
+		log.Fatalf("%+v", err)
+	}
+	handleResponse(responseBytes)
+	log.Println("we got response::", responseBytes)
+	log.Println("we got response::", string(responseBytes))
+	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 
 	reqResp.l.Lock()
 	reqResp.noOfAllRequests++

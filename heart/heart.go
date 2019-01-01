@@ -50,7 +50,7 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 		for i := 0; i < columns; i++ {
 			zAt := X.At(k, i)
 			_ = zAt
-			log.Println("zAt", zAt)
+			// log.Println("zAt", zAt)
 		}
 
 	}
@@ -105,7 +105,7 @@ func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Ep
 
 	}
 
-	PlotHeatMap(noOfAllRequests, lengthOfEachRequest, X, appendName)
+	// PlotHeatMap(noOfAllRequests, lengthOfEachRequest, X, appendName)
 }
 
 func getX(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64) *mat.Dense {
