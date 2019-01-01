@@ -144,7 +144,6 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 	}
 	requestBytes = bytes.Trim(requestBytes, nulByte)
 	handleRequest(requestBytes)
-	log.Println("we sent request::", requestBytes)
 	log.Println("we sent request::", string(requestBytes))
 
 	responseBytes, err := ioutil.ReadAll(responseBuf)
@@ -153,7 +152,6 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 		log.Fatalf("%+v", err)
 	}
 	handleResponse(responseBytes)
-	log.Println("we got response::", responseBytes)
 	log.Println("we got response::", string(responseBytes))
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 
