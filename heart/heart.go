@@ -55,7 +55,6 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 
 	}
 
-
 	// TODO: after establishing the members of the clusters, that's where we ought to call
 	// PlotHeatMap
 	return nil
@@ -105,7 +104,11 @@ func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Ep
 
 	}
 
-	// PlotHeatMap(noOfAllRequests, lengthOfEachRequest, X, appendName)
+	if appendName == "Requests" {
+		PlotHeatMap(noOfAllRequests, lengthOfEachRequest, X, appendName)
+	}
+	// TODO: we should be able to handle responses that are not of equal size.
+	// when we do so; PlotHeatMap should also be applied to responses
 }
 
 func getX(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64) *mat.Dense {
@@ -164,7 +167,7 @@ func PlotResults(labelsmap map[int]int, noOfAllRequests int, labels []int, nclus
 
 	}
 
-	err = pt.Save(6*vg.Inch, 4*vg.Inch, pngfile);
+	err = pt.Save(6*vg.Inch, 4*vg.Inch, pngfile)
 	if err != nil {
 		return errors.Wrap(err, "error saving png")
 	}
