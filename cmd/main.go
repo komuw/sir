@@ -158,8 +158,6 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 	reqResp.l.Lock()
 	reqResp.noOfAllRequests++
 	reqResp.noOfAllResponses++
-	log.Println("allRequests:", reqResp.allRequests)
-	log.Println("allResponses:", reqResp.allResponses)
 	log.Println("lengthOfEachRequest:", reqResp.lengthOfEachRequest)
 	log.Println("lengthOfEachResponse:", reqResp.lengthOfEachResponse)
 	reqResp.l.Unlock()
