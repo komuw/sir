@@ -99,6 +99,8 @@ func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Ep
 		log.Fatalf("\n%+v", err)
 
 	}
+
+	PlotHeatMap(noOfAllRequests, lengthOfEachRequest, X, appendName)
 }
 
 func getX(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64) *mat.Dense {
