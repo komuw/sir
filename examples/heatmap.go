@@ -14,6 +14,11 @@ import (
 	"gonum.org/v1/plot/vg"
 )
 
+/*
+usage:
+    go run examples/heatmap.go
+*/
+
 func main() {
 	noOfAllRequests := 11
 	lengthOfEachRequest := 4
@@ -48,7 +53,7 @@ func main() {
 	p.Y.Tick.Marker = integerTicks{}
 
 	p.Add(h)
-	err = p.Save(6*vg.Inch, 4*vg.Inch, "coolHeat.png")
+	err = p.Save(6*vg.Inch, 4*vg.Inch, "examples/coolHeat.png")
 	if err != nil {
 		log.Fatal(err)
 	}
