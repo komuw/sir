@@ -120,12 +120,14 @@ func PlotResults(labelsmap map[int]int, noOfAllRequests int, labels []int, nclus
 	pngfile := appendName + "_" + now.Format("Jan_2_2006_15_04_05") + ".png"
 
 	// plot result
-	p, err := plot.New()
+	pt, err := plot.New()
 	if err != nil {
 		return errors.Wrap(err, "error instantiating plot")
 
 	}
-	p.Title.Text = fmt.Sprintf("Estimated number of clusters: %d", nclusters)
+	pt.Add(plotter.NewGrid())
+	pt.Title.Text = fmt.Sprintf("Estimated number of clusters: %d", nclusters)
+
 	for cl := range labelsmap {
 		var data plotter.XYs
 		for sample := 0; sample < noOfAllRequests; sample++ {
@@ -150,12 +152,13 @@ func PlotResults(labelsmap map[int]int, noOfAllRequests int, labels []int, nclus
 		}
 		s.GlyphStyle.Color = color0
 		s.GlyphStyle.Shape = draw.CircleGlyph{}
-		p.Add(s)
+		pt.Add(s)
 		// p.Legend.Add(log.Sprintf("scatter %d", cl), s)
 
 	}
 
-	if err := p.Save(6*vg.Inch, 4*vg.Inch, pngfile); err != nil {
+	err = pt.Save(6*vg.Inch, 4*vg.Inch, pngfile);
+	if err != nil {
 		return errors.Wrap(err, "error saving png")
 	}
 
