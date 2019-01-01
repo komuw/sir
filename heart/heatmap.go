@@ -3,9 +3,7 @@ package heart
 // DOCS: https://github.com/gonum/plot/blob/master/plotter/heat_test.go
 
 import (
-	"fmt"
 	"log"
-	"math"
 	"time"
 
 	"gonum.org/v1/gonum/mat"
@@ -51,8 +49,6 @@ func PlotHeatMap(noOfAllRequests int, lengthOfEachRequest int, X *mat.Dense, app
 		log.Fatal(err)
 	}
 	p.Title.Text = "Heat map"
-	p.X.Tick.Marker = integerTicks{}
-	p.Y.Tick.Marker = integerTicks{}
 
 	p.Add(h)
 	err = p.Save(6*vg.Inch, 4*vg.Inch, pngfile)
@@ -81,14 +77,4 @@ func (g offsetUnitGrid) Y(r int) float64 {
 		panic("index out of range")
 	}
 	return float64(r) + g.YOffset
-}
-
-type integerTicks struct{}
-
-func (integerTicks) Ticks(min, max float64) []plot.Tick {
-	var t []plot.Tick
-	for i := math.Trunc(min); i <= max; i++ {
-		t = append(t, plot.Tick{Value: i, Label: fmt.Sprint(i)})
-	}
-	return t
 }
