@@ -64,6 +64,7 @@ type requestsResponses struct {
 var reqResp requestsResponses
 
 func clusterAndPlotRequests() {
+	appendName := "Requests"
 	reqResp.l.Lock()
 	defer reqResp.l.Unlock()
 
@@ -80,10 +81,21 @@ func clusterAndPlotRequests() {
 			reqResp.allRequests = append(reqResp.allRequests, float64(v))
 		}
 	}
-	heart.Run(reqResp.noOfAllRequests, reqResp.lengthOfLargestRequest, reqResp.allRequests, 3.0, 1.0, false, "Requests")
+	nclusters, X, err := heart.GetClusters(reqResp.noOfAllRequests, reqResp.lengthOfLargestRequest, reqResp.allRequests, 3.0, 1.0, false, appendName)
+	if err != nil {
+		log.Fatalf("\n%+v", err)
+	}
+	log.Printf("Requests estimated number of clusters: %d\n", nclusters)
+
+	proj := heart.FindPCA(X, reqResp.lengthOfLargestRequest)
+	err = heart.PlotResultsPCA(reqResp.noOfAllRequests, proj, nclusters, appendName)
+	if err != nil {
+		log.Fatalf("\n%+v", err)
+	}
 }
 
 func clusterAndPlotResponses() {
+	appendName := "Responses"
 	reqResp.l.Lock()
 	defer reqResp.l.Unlock()
 
@@ -100,7 +112,17 @@ func clusterAndPlotResponses() {
 			reqResp.allResponses = append(reqResp.allResponses, float64(v))
 		}
 	}
-	heart.Run(reqResp.noOfAllResponses, reqResp.lengthOfLargestResponse, reqResp.allResponses, 3.0, 1.0, false, "Responses")
+	nclusters, X, err := heart.GetClusters(reqResp.noOfAllResponses, reqResp.lengthOfLargestResponse, reqResp.allResponses, 3.0, 1.0, false, appendName)
+	if err != nil {
+		log.Fatalf("\n%+v", err)
+	}
+	log.Printf("Responses stimated number of clusters: %d\n", nclusters)
+
+	proj := heart.FindPCA(X, reqResp.lengthOfLargestResponse)
+	err = heart.PlotResultsPCA(reqResp.noOfAllResponses, proj, nclusters, appendName)
+	if err != nil {
+		log.Fatalf("\n%+v", err)
+	}
 }
 
 func handleRequest(requestBuf []byte) {

@@ -1,8 +1,6 @@
 package heart
 
 import (
-	"log"
-
 	"github.com/pa-m/sklearn/cluster"
 	"github.com/pa-m/sklearn/datasets"
 	"github.com/pa-m/sklearn/preprocessing"
@@ -32,7 +30,7 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 	// cluster_members :=  map[string][]int
 
 	rows, columns := X.Caps()
-	log.Println("rows, columns", rows, columns)
+	_, _ = rows, columns
 	for k := range labels {
 		for i := 0; i < columns; i++ {
 			zAt := X.At(k, i)
@@ -48,11 +46,11 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 
 }
 
-func Run(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64, Eps float64, MinSamples float64, autoGenerateSampleData bool, appendName string) {
+func GetClusters(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64, Eps float64, MinSamples float64, autoGenerateSampleData bool, appendName string) (int, *mat.Dense, error) {
 	// adapted from http://scikit-learn.org/stable/_downloads/plot_dbscan.ipynb
 	if lengthOfLargestRequest <= 1 {
 		err := errors.New("we cant create a matrix with no dimensions, ie X.At(x, y) will fail")
-		log.Fatalf("\n%+v", err)
+		return 0, nil, err
 	}
 
 	X := getX(noOfAllRequests, lengthOfLargestRequest, allRequests)
@@ -78,19 +76,7 @@ func Run(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64,
 	if _, ok := labelsmap[-1]; ok {
 		nclusters--
 	}
-	log.Printf("Estimated number of clusters: %d\n", nclusters)
-
-	err := findClusterMembers(labels, X)
-	if err != nil {
-		log.Fatalf("\n%+v", err)
-
-	}
-
-	proj := FindPCA(X, lengthOfLargestRequest)
-	err = PlotResultsPCA(noOfAllRequests, proj, nclusters, appendName)
-	if err != nil {
-		log.Fatalf("\n%+v", err)
-	}
+	return nclusters, X, nil
 }
 
 func getX(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64) *mat.Dense {
