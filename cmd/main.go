@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -67,12 +66,10 @@ var reqResp requestsResponses
 func clusterAndPlotRequests() {
 	reqResp.l.Lock()
 	defer reqResp.l.Unlock()
-	fmt.Println("reqResp.lengthOfLargestRequest::", reqResp.lengthOfLargestRequest)
 
 	for k, v := range reqResp.requestsSlice {
 		diff := reqResp.lengthOfLargestRequest - len(v)
 		if diff != 0 {
-			fmt.Println("diff", diff)
 			pad := bytes.Repeat([]byte(nulByte), diff)
 			v = append(v, pad...)
 			reqResp.requestsSlice[k] = v
