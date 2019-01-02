@@ -39,5 +39,7 @@ gonum.org/v1/netlib v0.0.0-20181029234149-ec6d1f5cefe6 h1:4WsZyVtkthqrHTbDCJfiTs
 gonum.org/v1/netlib v0.0.0-20181029234149-ec6d1f5cefe6/go.mod h1:wa6Ws7BG/ESfp6dHfk7C6KdzKA7wR7u/rKwOGE66zvw=
 gonum.org/v1/plot v0.0.0-20181208091836-db5ea5fa8928 h1:1l6aCHZ95wpkXcbcRqN7IKduQP3zEA5iMHNMn4g5PJw=
 gonum.org/v1/plot v0.0.0-20181208091836-db5ea5fa8928/go.mod h1:VIQWjXleEHakKVLjfhAAXUy3mq0NuXvobpOBf0ZBZro=
+gonum.org/v1/plot v0.0.0-20181219233134-e14e8c2c5cd7 h1:heYowfLbEOy1SNUif/9jBqX6T8sS2liiRzBH7QDtHfY=
+gonum.org/v1/plot v0.0.0-20181219233134-e14e8c2c5cd7/go.mod h1:VIQWjXleEHakKVLjfhAAXUy3mq0NuXvobpOBf0ZBZro=
 rsc.io/pdf v0.1.1 h1:k1MczvYDUvJBe93bYd7wrZLLUEcLZAuF824/I4e5Xr4=
 rsc.io/pdf v0.1.1/go.mod h1:n8OzWcQ6Sp37PL01nO98y4iUCRdTGarVfzxY20ICaU4=
