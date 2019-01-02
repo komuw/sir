@@ -49,14 +49,16 @@ func main() {
 }
 
 type requestsResponses struct {
-	l                   sync.RWMutex
-	noOfAllRequests     int
-	allRequests         []float64
-	lengthOfEachRequest int
+	l                      sync.RWMutex
+	noOfAllRequests        int
+	allRequests            []float64
+	lengthOfLargestRequest int
+	requestsSlice          [][]byte
 
-	noOfAllResponses     int
-	allResponses         []float64
-	lengthOfEachResponse int
+	noOfAllResponses        int
+	allResponses            []float64
+	lengthOfLargestResponse int
+	responsesSlice          [][]byte
 }
 
 var reqResp requestsResponses
@@ -64,33 +66,61 @@ var reqResp requestsResponses
 func clusterAndPlotRequests() {
 	reqResp.l.Lock()
 	defer reqResp.l.Unlock()
-	heart.Run(reqResp.noOfAllRequests, reqResp.lengthOfEachRequest, reqResp.allRequests, 3.0, 1.0, false, "Requests")
+
+	for k, v := range reqResp.requestsSlice {
+		diff := reqResp.lengthOfLargestRequest - len(v)
+		if diff != 0 {
+			pad := bytes.Repeat([]byte(nulByte), diff)
+			v = append(v, pad...)
+			reqResp.requestsSlice[k] = v
+		}
+	}
+	for _, eachRequest := range reqResp.requestsSlice {
+		for _, v := range eachRequest {
+			reqResp.allRequests = append(reqResp.allRequests, float64(v))
+		}
+	}
+	heart.Run(reqResp.noOfAllRequests, reqResp.lengthOfLargestRequest, reqResp.allRequests, 3.0, 1.0, false, "Requests")
 }
 
 func clusterAndPlotResponses() {
 	reqResp.l.Lock()
 	defer reqResp.l.Unlock()
-	heart.Run(reqResp.noOfAllResponses, reqResp.lengthOfEachResponse, reqResp.allResponses, 3.0, 1.0, false, "Responses")
+
+	for k, v := range reqResp.responsesSlice {
+		diff := reqResp.lengthOfLargestResponse - len(v)
+		if diff != 0 {
+			pad := bytes.Repeat([]byte(nulByte), diff)
+			v = append(v, pad...)
+			reqResp.responsesSlice[k] = v
+		}
+	}
+	for _, eachResponse := range reqResp.responsesSlice {
+		for _, v := range eachResponse {
+			reqResp.allResponses = append(reqResp.allResponses, float64(v))
+		}
+	}
+	heart.Run(reqResp.noOfAllResponses, reqResp.lengthOfLargestResponse, reqResp.allResponses, 3.0, 1.0, false, "Responses")
 }
 
 func handleRequest(requestBuf []byte) {
 	reqResp.l.Lock()
 	defer reqResp.l.Unlock()
-	reqResp.lengthOfEachRequest = len(requestBuf)
 
-	for _, v := range requestBuf {
-		reqResp.allRequests = append(reqResp.allRequests, float64(v))
+	if reqResp.lengthOfLargestRequest < len(requestBuf) {
+		reqResp.lengthOfLargestRequest = len(requestBuf)
 	}
+	reqResp.requestsSlice = append(reqResp.requestsSlice, requestBuf)
 }
 
 func handleResponse(responseBuf []byte) {
 	reqResp.l.Lock()
 	defer reqResp.l.Unlock()
-	reqResp.lengthOfEachResponse = len(responseBuf)
 
-	for _, v := range responseBuf {
-		reqResp.allResponses = append(reqResp.allResponses, float64(v))
+	if reqResp.lengthOfLargestResponse < len(responseBuf) {
+		reqResp.lengthOfLargestResponse = len(responseBuf)
 	}
+	reqResp.responsesSlice = append(reqResp.responsesSlice, responseBuf)
 }
 
 const nulByte = "\x00"
@@ -102,20 +132,6 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 		err = errors.Wrap(err, "unable to set reverseProxyConn deadline")
 		log.Fatalf("%+v", err)
 	}
-
-	//////////////////////////////////// LOG REQUEST ////////////////////////
-	// TODO: make the buffer growable
-	requestBuf := make([]byte, 1024)
-	reqLen, err := frontendConn.Read(requestBuf)
-	if err != nil {
-		log.Fatalf("Error reading %+v", err)
-	}
-	_ = reqLen
-	requestBuf = bytes.Trim(requestBuf, nulByte)
-	handleRequest(requestBuf)
-	log.Println("we sent request::", requestBuf)
-	log.Println("we sent request::", string(requestBuf))
-	//////////////////////////////////// LOG REQUEST ////////////////////////
 
 	backendConn, err := net.Dial("tcp", remoteAddr)
 	if err != nil {
@@ -130,28 +146,49 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 	}
 	log.Print("frontendConnected")
 
-	var backendBuf bytes.Buffer
-	backendTee := io.TeeReader(backendConn, &backendBuf)
-	io.Copy(backendConn, bytes.NewReader(requestBuf))
-	io.Copy(frontendConn, backendTee)
+	requestBuf := new(bytes.Buffer)
+	responseBuf := new(bytes.Buffer)
+	ch := make(chan bool)
 
-	//////////////////////////////////// LOG RESPONSE ////////////////////////
-	backendBytes, err := ioutil.ReadAll(&backendBuf)
+	// forward data from client to server
+	go func() {
+		tee := io.TeeReader(frontendConn, requestBuf)
+		io.Copy(backendConn, tee)
+		ch <- true
+	}()
+
+	// forward data from server to client
+	go func() {
+		tee := io.TeeReader(backendConn, responseBuf)
+		io.Copy(frontendConn, tee)
+		ch <- true
+	}()
+
+	<-ch
+	<-ch
+	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
+	requestBytes, err := ioutil.ReadAll(requestBuf)
 	if err != nil {
-		err = errors.Wrap(err, "unable to read backendBuf")
+		err = errors.Wrap(err, "unable to read & log request")
 		log.Fatalf("%+v", err)
 	}
-	handleResponse(backendBytes)
-	log.Println("we got response::", backendBytes)
-	log.Println("we got response::", string(backendBytes))
-	//////////////////////////////////// LOG RESPONSE ////////////////////////
+	requestBytes = bytes.Trim(requestBytes, nulByte)
+	handleRequest(requestBytes)
+	log.Println("we sent request::", string(requestBytes))
+
+	responseBytes, err := ioutil.ReadAll(responseBuf)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read & log response")
+		log.Fatalf("%+v", err)
+	}
+	handleResponse(responseBytes)
+	log.Println("we got response::", string(responseBytes))
+	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 
 	reqResp.l.Lock()
 	reqResp.noOfAllRequests++
 	reqResp.noOfAllResponses++
-	log.Println("allRequests:", reqResp.allRequests)
-	log.Println("allResponses:", reqResp.allResponses)
-	log.Println("lengthOfEachRequest:", reqResp.lengthOfEachRequest)
-	log.Println("lengthOfEachResponse:", reqResp.lengthOfEachResponse)
+	log.Println("lengthOfLargestRequest:", reqResp.lengthOfLargestRequest)
+	log.Println("lengthOfLargestResponse:", reqResp.lengthOfLargestResponse)
 	reqResp.l.Unlock()
 }

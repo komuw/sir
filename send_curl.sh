@@ -15,7 +15,7 @@ do
    localhost:7777/post
 done
 
-for i in {1..8}
+for i in {1..3}
 do
    printf "\n sending request:: \n"
    curl -vL \
@@ -26,14 +26,14 @@ do
    localhost:7777/post
 done
 
-for i in {1..11}
+for i in {1..4}
 do
    printf "\n sending request:: \n"
    curl -vL \
    -H "accept: application/json" \
    -H "Content-Type: application/json" \
    -H "Host: httpbin.org" \
-   -d '{"name":"john"}' \
+   -d '{"name":"longerRequest"}' \
    localhost:7777/post
 done
 

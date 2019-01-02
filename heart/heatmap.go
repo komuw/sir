@@ -1,11 +1,10 @@
-package main
+package heart
 
 // DOCS: https://github.com/gonum/plot/blob/master/plotter/heat_test.go
 
 import (
-	"fmt"
 	"log"
-	"math"
+	"time"
 
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/plot"
@@ -14,28 +13,29 @@ import (
 	"gonum.org/v1/plot/vg"
 )
 
-/*
-usage:
-    go run examples/heatmap.go
-*/
+func PlotHeatMap(noOfAllRequests int, lengthOfLargestRequest int, X *mat.Dense, appendName string) {
 
-func main() {
-	noOfAllRequests := 11
-	lengthOfLargestRequest := 4
-	Xdense := mat.NewDense(
-		noOfAllRequests, lengthOfLargestRequest,
-		[]float64{
-			1, 2, 3, 4,
-			1, 2, 3, 4,
-			1, 2, 3, 4,
-			1, 2, 3, 4,
-			1, 2, 3, 4,
-			1, 2, 3, 4,
-			1, 2, 3, 4,
-			5, 6, 7, 8,
-			9, 10, 11, 12,
-			13, 14, 15, 16,
-			17, 18, 19, 20})
+	now := time.Now()
+	// Save the plot to a PNG file.
+	pngfile := appendName + "_" + "HeatMap_" + now.Format("Jan_2_2006_15_04_05") + ".png"
+
+	// noOfAllRequests := 11
+	// lengthOfLargestRequest := 4
+	// Xdense := mat.NewDense(
+	// 	noOfAllRequests, lengthOfLargestRequest,
+	// 	[]float64{
+	// 		1, 2, 3, 4,
+	// 		1, 2, 3, 4,
+	// 		1, 2, 3, 4,
+	// 		1, 2, 3, 4,
+	// 		1, 2, 3, 4,
+	// 		1, 2, 3, 4,
+	// 		1, 2, 3, 4,
+	// 		5, 6, 7, 8,
+	// 		9, 10, 11, 12,
+	// 		13, 14, 15, 16,
+	// 		17, 18, 19, 20})
+	Xdense := X
 
 	m := offsetUnitGrid{
 		XOffset: 0,
@@ -49,11 +49,9 @@ func main() {
 		log.Fatal(err)
 	}
 	p.Title.Text = "Heat map"
-	p.X.Tick.Marker = integerTicks{}
-	p.Y.Tick.Marker = integerTicks{}
 
 	p.Add(h)
-	err = p.Save(6*vg.Inch, 4*vg.Inch, "examples/coolHeat.png")
+	err = p.Save(6*vg.Inch, 4*vg.Inch, pngfile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,14 +77,4 @@ func (g offsetUnitGrid) Y(r int) float64 {
 		panic("index out of range")
 	}
 	return float64(r) + g.YOffset
-}
-
-type integerTicks struct{}
-
-func (integerTicks) Ticks(min, max float64) []plot.Tick {
-	var t []plot.Tick
-	for i := math.Trunc(min); i <= max; i++ {
-		t = append(t, plot.Tick{Value: i, Label: fmt.Sprint(i)})
-	}
-	return t
 }
