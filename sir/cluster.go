@@ -1,4 +1,4 @@
-package heart
+package sir
 
 import (
 	"github.com/pa-m/sklearn/cluster"
@@ -7,11 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"gonum.org/v1/gonum/mat"
 )
-
-/*
-usage:
-  go run -race go_dbscan/go_dbscan.go
-*/
 
 func findClusterMembers(labels []int, X *mat.Dense) error {
 	/*

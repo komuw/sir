@@ -22,8 +22,3 @@ do
 done
 
 # The above produces a cluster of three.
-
-# Note: for this to work with our current dbscan code;
-# len($MYSTR1) == len($MYSTR2)
-# ie,
-# len("test out the server")  == len("something different")

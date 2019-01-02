@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/komuw/dbscan/heart"
+	"github.com/komuw/sir/sir"
 	"github.com/pkg/errors"
 )
 
@@ -81,14 +81,14 @@ func clusterAndPlotRequests() {
 			reqResp.allRequests = append(reqResp.allRequests, float64(v))
 		}
 	}
-	nclusters, X, err := heart.GetClusters(reqResp.noOfAllRequests, reqResp.lengthOfLargestRequest, reqResp.allRequests, 3.0, 1.0, false, appendName)
+	nclusters, X, err := sir.GetClusters(reqResp.noOfAllRequests, reqResp.lengthOfLargestRequest, reqResp.allRequests, 3.0, 1.0, false, appendName)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
 	log.Printf("Requests estimated number of clusters: %d\n", nclusters)
 
-	proj := heart.FindPCA(X, reqResp.lengthOfLargestRequest)
-	err = heart.PlotResultsPCA(reqResp.noOfAllRequests, proj, nclusters, appendName)
+	proj := sir.FindPCA(X, reqResp.lengthOfLargestRequest)
+	err = sir.PlotResultsPCA(reqResp.noOfAllRequests, proj, nclusters, appendName)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
@@ -112,14 +112,14 @@ func clusterAndPlotResponses() {
 			reqResp.allResponses = append(reqResp.allResponses, float64(v))
 		}
 	}
-	nclusters, X, err := heart.GetClusters(reqResp.noOfAllResponses, reqResp.lengthOfLargestResponse, reqResp.allResponses, 3.0, 1.0, false, appendName)
+	nclusters, X, err := sir.GetClusters(reqResp.noOfAllResponses, reqResp.lengthOfLargestResponse, reqResp.allResponses, 3.0, 1.0, false, appendName)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
 	log.Printf("Responses stimated number of clusters: %d\n", nclusters)
 
-	proj := heart.FindPCA(X, reqResp.lengthOfLargestResponse)
-	err = heart.PlotResultsPCA(reqResp.noOfAllResponses, proj, nclusters, appendName)
+	proj := sir.FindPCA(X, reqResp.lengthOfLargestResponse)
+	err = sir.PlotResultsPCA(reqResp.noOfAllResponses, proj, nclusters, appendName)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}

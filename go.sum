@@ -6,6 +6,7 @@ github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 h1:DACJavvAHhabrF0
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
 github.com/jung-kurt/gofpdf v1.0.0 h1:EroSdlP9BOoL5ssLYf3uLJXhCQMMM2fFxCJDKA3RhnA=
 github.com/jung-kurt/gofpdf v1.0.0/go.mod h1:7Id9E/uU8ce6rXgefFLlgrJj/GYY22cpxn+r32jIOes=
+github.com/komuw/dbscan v0.0.0-20190102135206-2f4932c12e89 h1:28wZuKA7vdngMUkgAf7Cv9sSr6oe/IEXU+77yhwH3a0=
 github.com/llgcode/draw2d v0.0.0-20180817132918-587a55234ca2 h1:3xDkT1Tbsw2yDtKWUrROAlr15+dzp76kwucDvAPPnQo=
 github.com/llgcode/draw2d v0.0.0-20180817132918-587a55234ca2/go.mod h1:mVa0dA29Db2S4LVqDYLlsePDzRJLDfdhVZiI15uY0FA=
 github.com/llgcode/ps v0.0.0-20150911083025-f1443b32eedb h1:61ndUreYSlWFeCY44JxDDkngVoI7/1MVhEl98Nm0KOk=

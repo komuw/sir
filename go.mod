@@ -1,4 +1,4 @@
-module github.com/komuw/dbscan
+module github.com/komuw/sir
 
 require (
 	github.com/pa-m/sklearn v0.0.0-20181230183135-36c607728350

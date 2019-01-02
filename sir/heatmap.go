@@ -1,4 +1,4 @@
-package heart
+package sir
 
 // DOCS: https://github.com/gonum/plot/blob/master/plotter/heat_test.go
 
