@@ -15,10 +15,6 @@ usage:
   go run -race go_dbscan/go_dbscan.go
 */
 
-// TODO: we should be able to handle requests that are not of equal size.
-// Our current dbscan code can example only support something like;
-// len("test out the server")  == len("something different")
-
 func findClusterMembers(labels []int, X *mat.Dense) error {
 	/*
 		for

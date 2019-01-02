@@ -36,8 +36,3 @@ do
    -d '{"name":"longerRequest"}' \
    localhost:7777/post
 done
-
-# Note: for this to work with our current dbscan code;
-# the Content-Length of the 3 requests should be the same.
-# thats why we have used;
-# -d '{"name":"komu"}', -d '{"name":"juma"}', -d '{"name":"john"}'
