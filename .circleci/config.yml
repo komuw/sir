@@ -48,69 +48,8 @@ jobs:
                 gobin honnef.co/go/tools/cmd/staticcheck@2019.1
 
         - run: source /etc/profile && go build --race -o sir cmd/main.go
-        - run: ./sir -v
-        - run: ./sir -up -d -f testdata/docker-compose.yml
-        - run:
-            name: echo number of running containers (expected=12), actual;
-            command: |
-                num_containers=$(docker ps -q | wc -l)
-                echo "number of containers are; $num_containers"
-                if [ "$num_containers" != "12" ]; then
-                    echo "wanted 12 containers, got $num_containers" && exit 500
-                fi
-        - run:
-            name: check that docker linking works
-            command: |
-                docker exec -it backup ping -w3 redis
-                docker exec -it backup ping -w3 eminem.com
-        - run:
-            name: check that docker .env file works
-            command: |
-                CHECK_ENV_VAR=$(docker exec -it buildservice printenv | grep NAME_IN_ENV_FILE)
-                echo "env var from .env file is; $CHECK_ENV_VAR"
-                if [[ $CHECK_ENV_VAR != *"Mutabaruka"* ]]; then
-                    echo "wanted env var NAME_IN_ENV_FILE=Mutabaruka, got $CHECK_ENV_VAR"
-                fi
-        # remove the containers running from the previous command
-        - run: docker ps -aq | xargs docker rm -f; docker image prune -fa; docker system prune -af
-        - run: cp sir testdata/ && cd testdata/ && ./sir -up -d
-        - run:
-            name: echo number of running containers (expected=12), actual;
-            command: |
-                num_containers=$(docker ps -q | wc -l)
-                echo "number of containers are; $num_containers"
-                if [ "$num_containers" != "12" ]; then
-                    echo "wanted 12 containers, got $num_containers" && exit 500
-                fi
-        - run:
-            name: check that docker linking works
-            command: |
-                docker exec -it backup ping -w3 redis
-                docker exec -it backup ping -w3 eminem.com
-        - run:
-            name: check that docker .env file works
-            command: |
-                CHECK_ENV_VAR=$(docker exec -it buildservice printenv | grep NAME_IN_ENV_FILE)
-                echo "env var from .env file is; $CHECK_ENV_VAR"
-                if [[ $CHECK_ENV_VAR != *"Mutabaruka"* ]]; then
-                    echo "wanted env var NAME_IN_ENV_FILE=Mutabaruka, got $CHECK_ENV_VAR"
-                fi
-        # test rebuild, stop (BUT DO NOT remove) containers from previous command
-        # BUT because of this error; https://circleci.com/docs/1.0/docker-btrfs-error/
-        # we cant do that on circleCI(though it works locally).
-        # so until circleCI fixes(or we run circleCI in a vm instead of a container), we need to destroy
-        - run: docker ps -aq | xargs docker rm -f; docker image prune -fa; docker system prune -af
-        - run: ./sir -up -d -f testdata/docker-compose.yml -build
-        - run:
-            name: echo number of running containers (expected=12), actual;
-            command: |
-                all_containers=$(docker ps -aq | wc -l)
-                running_containers=$(docker ps -q | wc -l)
-                echo "number of all containers; $all_containers"
-                echo "number of running containers are; $running_containers"
-                if [ "$running_containers" != "12" ]; then
-                    echo "wanted 12 containers, got $running_containers" && exit 500
-                fi
+        # - run: ./sir -v
+
         - run:
             name: go vet
             command: source /etc/profile && go vet -v -all -shadow ./...
@@ -129,35 +68,6 @@ jobs:
                 source /etc/profile && \
                 go test -timeout 1m -v -race -cover -coverprofile=coverage.txt ./... && \
                 bash <(curl -s https://codecov.io/bash)
-
-        # benchmark against docker-compose
-        - run: rm sir
-        - run: source /etc/profile && go build -o sir cli/cli.go
-        - run: docker ps -aq | xargs docker rm -f; docker image prune -fa; docker system prune -af
-        - run:
-            name: show docker-compose version
-            command: docker-compose version
-        - run:
-            name: time docker-compose up
-            command: time docker-compose -f testdata/docker-compose.yml up -d
-        - run: docker ps -aq | xargs docker rm -f; docker image prune -fa; docker system prune -af
-        - run:
-            name: time sir -up
-            command: time ./sir -up -d -f testdata/docker-compose.yml
-        - run:
-            name: check if changes have release notes 
-            command: |
-                if [ "$CIRCLE_BRANCH" == "master" ]; then
-                    printf "\n $CIRCLE_BRANCH branch, ignoring check for relese notes \n"
-                else
-                    ChangedFiles=`git diff --name-only origin/master`
-                    case "$ChangedFiles" in
-                        *RELEASE_NOTES.*)
-                            printf "\n Thanks, your commits include update to release notes. \n";;
-                        *)
-                            printf "\n You should add release notes to .github/RELEASE_NOTES.md \n" && exit 77;;
-                    esac
-                fi
 
   deploy:
     docker:
