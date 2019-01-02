@@ -6,7 +6,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/komuw/Sir)](https://goreportcard.com/report/github.com/komuw/sir)          
 
 
-Sir is a statistical regression checker.               
+Sir, is a reverse proxy that checks for regressions in your services/apps.               
 It's name is derived from the late(and great) Kenyan hip hop artiste, [E-Sir](https://en.wikipedia.org/wiki/E-Sir). 
 
 
