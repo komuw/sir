@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/komuw/sir/sir"
+	"github.com/komuw/sir/pkg"
 	"github.com/pkg/errors"
 )
 
