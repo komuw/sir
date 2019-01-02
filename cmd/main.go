@@ -53,8 +53,7 @@ type requestsResponses struct {
 	noOfAllRequests        int
 	allRequests            []float64
 	lengthOfLargestRequest int
-
-	requestsSlice [][]byte
+	requestsSlice          [][]byte
 
 	noOfAllResponses     int
 	allResponses         []float64
