@@ -34,6 +34,7 @@ golang.org/x/tools v0.0.0-20181218204010-d4971274fe38/go.mod h1:n7NCudcB/nEzxVGm
 gonum.org/v1/gonum v0.0.0-20180816165407-929014505bf4/go.mod h1:Y+Yx5eoAFn32cQvJDxZx5Dpnq+c3wtXuadVZAcxbbBo=
 gonum.org/v1/gonum v0.0.0-20181216103746-44a6721e0d61 h1:fx0ndAA1GeA8zuWN4zUrs389wU74OIRR0zNAxozuWp0=
 gonum.org/v1/gonum v0.0.0-20181216103746-44a6721e0d61/go.mod h1:Y+Yx5eoAFn32cQvJDxZx5Dpnq+c3wtXuadVZAcxbbBo=
+gonum.org/v1/gonum v0.0.0-20190101095345-16380329fcd8 h1:/mt1UV/gHICCpPYZFYF/k9YnuDeLZKYjkNXJBlkbSBI=
 gonum.org/v1/netlib v0.0.0-20181029234149-ec6d1f5cefe6 h1:4WsZyVtkthqrHTbDCJfiTs8IWNYE4uvsSDgaV6xpp+o=
 gonum.org/v1/netlib v0.0.0-20181029234149-ec6d1f5cefe6/go.mod h1:wa6Ws7BG/ESfp6dHfk7C6KdzKA7wR7u/rKwOGE66zvw=
 gonum.org/v1/plot v0.0.0-20181208091836-db5ea5fa8928 h1:1l6aCHZ95wpkXcbcRqN7IKduQP3zEA5iMHNMn4g5PJw=

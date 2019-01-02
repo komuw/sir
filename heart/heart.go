@@ -106,6 +106,8 @@ func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Ep
 
 	if appendName == "Requests" {
 		PlotHeatMap(noOfAllRequests, lengthOfEachRequest, X, appendName)
+	} else if appendName == "testHeartRun" {
+		PlotHeatMap(noOfAllRequests, lengthOfEachRequest, X, appendName)
 	}
 	// TODO: we should be able to handle responses that are not of equal size.
 	// when we do so; PlotHeatMap should also be applied to responses
