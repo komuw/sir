@@ -34,7 +34,7 @@ func main() {
 
 	{
 		time.AfterFunc(23*time.Second, clusterAndPlotRequests)
-		// time.AfterFunc(23*time.Second, clusterAndPlotResponses)
+		time.AfterFunc(23*time.Second, clusterAndPlotResponses)
 	}
 
 	for {
