@@ -13,16 +13,16 @@ import (
 	"gonum.org/v1/plot/vg"
 )
 
-func PlotHeatMap(noOfAllRequests int, lengthOfEachRequest int, X *mat.Dense, appendName string) {
+func PlotHeatMap(noOfAllRequests int, lengthOfLargestRequest int, X *mat.Dense, appendName string) {
 
 	now := time.Now()
 	// Save the plot to a PNG file.
 	pngfile := appendName + "_" + "HeatMap_" + now.Format("Jan_2_2006_15_04_05") + ".png"
 
 	// noOfAllRequests := 11
-	// lengthOfEachRequest := 4
+	// lengthOfLargestRequest := 4
 	// Xdense := mat.NewDense(
-	// 	noOfAllRequests, lengthOfEachRequest,
+	// 	noOfAllRequests, lengthOfLargestRequest,
 	// 	[]float64{
 	// 		1, 2, 3, 4,
 	// 		1, 2, 3, 4,
@@ -41,7 +41,7 @@ func PlotHeatMap(noOfAllRequests int, lengthOfEachRequest int, X *mat.Dense, app
 		XOffset: 0,
 		YOffset: 0,
 		Data:    Xdense}
-	pal := palette.Heat(noOfAllRequests*lengthOfEachRequest, 1)
+	pal := palette.Heat(noOfAllRequests*lengthOfLargestRequest, 1)
 	h := plotter.NewHeatMap(m, pal)
 
 	p, err := plot.New()

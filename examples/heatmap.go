@@ -21,9 +21,9 @@ usage:
 
 func main() {
 	noOfAllRequests := 11
-	lengthOfEachRequest := 4
+	lengthOfLargestRequest := 4
 	Xdense := mat.NewDense(
-		noOfAllRequests, lengthOfEachRequest,
+		noOfAllRequests, lengthOfLargestRequest,
 		[]float64{
 			1, 2, 3, 4,
 			1, 2, 3, 4,
@@ -41,7 +41,7 @@ func main() {
 		XOffset: 0,
 		YOffset: 0,
 		Data:    Xdense}
-	pal := palette.Heat(noOfAllRequests*lengthOfEachRequest, 1)
+	pal := palette.Heat(noOfAllRequests*lengthOfLargestRequest, 1)
 	h := plotter.NewHeatMap(m, pal)
 
 	p, err := plot.New()

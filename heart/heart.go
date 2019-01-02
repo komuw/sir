@@ -61,14 +61,14 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 
 }
 
-func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Eps float64, MinSamples float64, autoGenerateSampleData bool, appendName string) {
+func Run(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64, Eps float64, MinSamples float64, autoGenerateSampleData bool, appendName string) {
 	// adapted from http://scikit-learn.org/stable/_downloads/plot_dbscan.ipynb
-	if lengthOfEachRequest <= 1 {
+	if lengthOfLargestRequest <= 1 {
 		err := errors.New("we cant create a matrix with no dimensions, ie X.At(x, y) will fail")
 		log.Fatalf("\n%+v", err)
 	}
 
-	X := getX(noOfAllRequests, lengthOfEachRequest, allRequests)
+	X := getX(noOfAllRequests, lengthOfLargestRequest, allRequests)
 	if autoGenerateSampleData {
 		noOfAllRequests = 750
 		Eps = 1.2 //3.0
@@ -104,7 +104,7 @@ func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Ep
 
 	}
 
-	proj := FindPCA(X, lengthOfEachRequest)
+	proj := FindPCA(X, lengthOfLargestRequest)
 	err = PlotResultsPCA(noOfAllRequests, proj, nclusters, appendName)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
@@ -112,16 +112,16 @@ func Run(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64, Ep
 	}
 
 	// if appendName == "Requests" {
-	// 	PlotHeatMap(noOfAllRequests, lengthOfEachRequest, X, appendName)
+	// 	PlotHeatMap(noOfAllRequests, lengthOfLargestRequest, X, appendName)
 	// } else if appendName == "testHeartRun" {
-	// 	PlotHeatMap(noOfAllRequests, lengthOfEachRequest, X, appendName)
+	// 	PlotHeatMap(noOfAllRequests, lengthOfLargestRequest, X, appendName)
 	// }
 	// TODO: we should be able to handle responses that are not of equal size.
 	// when we do so; PlotHeatMap should also be applied to responses
 }
 
-func getX(noOfAllRequests int, lengthOfEachRequest int, allRequests []float64) *mat.Dense {
-	return mat.NewDense(noOfAllRequests, lengthOfEachRequest, allRequests)
+func getX(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64) *mat.Dense {
+	return mat.NewDense(noOfAllRequests, lengthOfLargestRequest, allRequests)
 }
 
 func generateSampleData(noOfAllRequests int) *mat.Dense {
