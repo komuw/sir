@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -34,7 +35,7 @@ func main() {
 
 	{
 		time.AfterFunc(23*time.Second, clusterAndPlotRequests)
-		time.AfterFunc(23*time.Second, clusterAndPlotResponses)
+		// time.AfterFunc(23*time.Second, clusterAndPlotResponses)
 	}
 
 	for {
@@ -49,10 +50,12 @@ func main() {
 }
 
 type requestsResponses struct {
-	l                   sync.RWMutex
-	noOfAllRequests     int
-	allRequests         []float64
-	lengthOfEachRequest int
+	l                      sync.RWMutex
+	noOfAllRequests        int
+	allRequests            []float64
+	lengthOfLargestRequest int
+
+	requestsSlice [][]byte
 
 	noOfAllResponses     int
 	allResponses         []float64
@@ -64,7 +67,23 @@ var reqResp requestsResponses
 func clusterAndPlotRequests() {
 	reqResp.l.Lock()
 	defer reqResp.l.Unlock()
-	heart.Run(reqResp.noOfAllRequests, reqResp.lengthOfEachRequest, reqResp.allRequests, 3.0, 1.0, false, "Requests")
+	fmt.Println("reqResp.lengthOfLargestRequest::", reqResp.lengthOfLargestRequest)
+
+	for k, v := range reqResp.requestsSlice {
+		diff := reqResp.lengthOfLargestRequest - len(v)
+		if diff != 0 {
+			fmt.Println("diff", diff)
+			pad := bytes.Repeat([]byte(nulByte), diff)
+			v = append(v, pad...)
+			reqResp.requestsSlice[k] = v
+		}
+	}
+	for _, eachRequest := range reqResp.requestsSlice {
+		for _, v := range eachRequest {
+			reqResp.allRequests = append(reqResp.allRequests, float64(v))
+		}
+	}
+	heart.Run(reqResp.noOfAllRequests, reqResp.lengthOfLargestRequest, reqResp.allRequests, 3.0, 1.0, false, "Requests")
 }
 
 func clusterAndPlotResponses() {
@@ -76,11 +95,15 @@ func clusterAndPlotResponses() {
 func handleRequest(requestBuf []byte) {
 	reqResp.l.Lock()
 	defer reqResp.l.Unlock()
-	reqResp.lengthOfEachRequest = len(requestBuf)
 
-	for _, v := range requestBuf {
-		reqResp.allRequests = append(reqResp.allRequests, float64(v))
+	if reqResp.lengthOfLargestRequest < len(requestBuf) {
+		reqResp.lengthOfLargestRequest = len(requestBuf)
 	}
+
+	// for _, v := range requestBuf {
+	// 	reqResp.allRequests = append(reqResp.allRequests, float64(v))
+	// }
+	reqResp.requestsSlice = append(reqResp.requestsSlice, requestBuf)
 }
 
 func handleResponse(responseBuf []byte) {
@@ -158,7 +181,7 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 	reqResp.l.Lock()
 	reqResp.noOfAllRequests++
 	reqResp.noOfAllResponses++
-	log.Println("lengthOfEachRequest:", reqResp.lengthOfEachRequest)
+	log.Println("lengthOfLargestRequest:", reqResp.lengthOfLargestRequest)
 	log.Println("lengthOfEachResponse:", reqResp.lengthOfEachResponse)
 	reqResp.l.Unlock()
 }

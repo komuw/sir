@@ -33,7 +33,7 @@ do
    -H "accept: application/json" \
    -H "Content-Type: application/json" \
    -H "Host: httpbin.org" \
-   -d '{"name":"john"}' \
+   -d '{"name":"longerRequest"}' \
    localhost:7777/post
 done
 
