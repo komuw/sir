@@ -39,33 +39,37 @@ func main() {
 	{
 		// candidate
 		clusterAndPlotReqCandidate := func() {
-			clusterAndPlotRequests(reqRespCandidate)
+			reqRespCandidate.ClusterAndPlotRequests()
 		}
 		clusterAndPlotResCandidate := func() {
-			clusterAndPlotResponses(reqRespCandidate)
+			reqRespCandidate.ClusterAndPlotResponses()
 		}
 		time.AfterFunc(23*time.Second, clusterAndPlotReqCandidate)
 		time.AfterFunc(23*time.Second, clusterAndPlotResCandidate)
 
 		// primary
 		clusterAndPlotReqPrimary := func() {
-			clusterAndPlotRequests(reqRespPrimary)
+			reqRespPrimary.ClusterAndPlotRequests()
 		}
 		clusterAndPlotResPrimary := func() {
-			clusterAndPlotResponses(reqRespPrimary)
+			reqRespPrimary.ClusterAndPlotResponses()
 		}
-		time.AfterFunc(23*time.Second, clusterAndPlotReqPrimary)
-		time.AfterFunc(23*time.Second, clusterAndPlotResPrimary)
+		time.AfterFunc(25*time.Second, clusterAndPlotReqPrimary)
+		time.AfterFunc(25*time.Second, clusterAndPlotResPrimary)
 
 		// secondary
 		clusterAndPlotReqSecondary := func() {
-			clusterAndPlotRequests(reqRespSecondary)
+			reqRespSecondary.ClusterAndPlotRequests()
 		}
 		clusterAndPlotResSecondary := func() {
-			clusterAndPlotResponses(reqRespSecondary)
+			reqRespSecondary.ClusterAndPlotResponses()
 		}
-		time.AfterFunc(23*time.Second, clusterAndPlotReqSecondary)
-		time.AfterFunc(23*time.Second, clusterAndPlotResSecondary)
+		time.AfterFunc(27*time.Second, clusterAndPlotReqSecondary)
+		time.AfterFunc(27*time.Second, clusterAndPlotResSecondary)
+
+		//TODO:
+		//1. this time.AfterFuncs should all be scheduled to run at the same time
+		//2. actually, we should not be using time.AfterFunc at all; but some other mechanism
 	}
 
 	for {
@@ -81,68 +85,6 @@ func main() {
 		go forward(frontendConn, primaryBackendAddr, reqRespPrimary)
 		time.Sleep(2 * time.Second)
 		go forward(frontendConn, secondaryBackendAddr, reqRespSecondary)
-	}
-}
-
-func clusterAndPlotRequests(reqResp *sir.RequestsResponses) {
-	appendName := "Requests"
-	reqResp.L.Lock()
-	defer reqResp.L.Unlock()
-
-	for k, v := range reqResp.RequestsSlice {
-		diff := reqResp.LengthOfLargestRequest - len(v)
-		if diff != 0 {
-			pad := bytes.Repeat([]byte(sir.NulByte), diff)
-			v = append(v, pad...)
-			reqResp.RequestsSlice[k] = v
-		}
-	}
-	for _, eachRequest := range reqResp.RequestsSlice {
-		for _, v := range eachRequest {
-			reqResp.AllRequests = append(reqResp.AllRequests, float64(v))
-		}
-	}
-	nclusters, X, err := sir.GetClusters(reqResp.NoOfAllRequests, reqResp.LengthOfLargestRequest, reqResp.AllRequests, 3.0, 1.0, false, appendName)
-	if err != nil {
-		log.Fatalf("\n%+v", err)
-	}
-	log.Printf("Requests estimated number of clusters: %d\n", nclusters)
-
-	proj := sir.FindPCA(X, reqResp.LengthOfLargestRequest)
-	err = sir.PlotResultsPCA(reqResp.NoOfAllRequests, proj, nclusters, appendName)
-	if err != nil {
-		log.Fatalf("\n%+v", err)
-	}
-}
-
-func clusterAndPlotResponses(reqResp *sir.RequestsResponses) {
-	appendName := "Responses"
-	reqResp.L.Lock()
-	defer reqResp.L.Unlock()
-
-	for k, v := range reqResp.ResponsesSlice {
-		diff := reqResp.LengthOfLargestResponse - len(v)
-		if diff != 0 {
-			pad := bytes.Repeat([]byte(sir.NulByte), diff)
-			v = append(v, pad...)
-			reqResp.ResponsesSlice[k] = v
-		}
-	}
-	for _, eachResponse := range reqResp.ResponsesSlice {
-		for _, v := range eachResponse {
-			reqResp.AllResponses = append(reqResp.AllResponses, float64(v))
-		}
-	}
-	nclusters, X, err := sir.GetClusters(reqResp.NoOfAllResponses, reqResp.LengthOfLargestResponse, reqResp.AllResponses, 3.0, 1.0, false, appendName)
-	if err != nil {
-		log.Fatalf("\n%+v", err)
-	}
-	log.Printf("Responses stimated number of clusters: %d\n", nclusters)
-
-	proj := sir.FindPCA(X, reqResp.LengthOfLargestResponse)
-	err = sir.PlotResultsPCA(reqResp.NoOfAllResponses, proj, nclusters, appendName)
-	if err != nil {
-		log.Fatalf("\n%+v", err)
 	}
 }
 
