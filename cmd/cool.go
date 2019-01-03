@@ -10,10 +10,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-func priSecForward(requestBytes []byte, remoteAddr string, reqResp *sir.RequestsResponse) {
-	backendConn, err := net.Dial("tcp", remoteAddr)
+func priSecForward(requestBytes []byte, reqResp *sir.RequestsResponse) {
+	backendConn, err := net.Dial("tcp", reqResp.Backend.Addr)
 	if err != nil {
-		err = errors.Wrapf(err, "dial failed for address %s of backend %v", remoteAddr, reqResp.Backend)
+		err = errors.Wrapf(err, "dial failed for backend %v", reqResp.Backend)
 		log.Fatalf("%+v", err)
 	}
 	defer backendConn.Close()
@@ -22,31 +22,31 @@ func priSecForward(requestBytes []byte, remoteAddr string, reqResp *sir.Requests
 		err = errors.Wrapf(err, "unable to set backendConn deadline of backend %v", reqResp.Backend)
 		log.Fatalf("%+v", err)
 	}
-	log.Printf("frontend connected to backend %v(%v)", reqResp.Backend, remoteAddr)
+	log.Printf("frontend connected to backend %v", reqResp.Backend)
 
 	_, err = backendConn.Write(requestBytes)
 	if err != nil {
-		err = errors.Wrapf(err, "backendConn.Write of backend %v failrd", reqResp.Backend)
+		err = errors.Wrapf(err, "backendConn.Write failed for backend %v", reqResp.Backend)
 		log.Fatalf("%+v", err)
 	}
 	reqResp.HandleRequest(requestBytes)
 
 	responseBytes, err := ioutil.ReadAll(backendConn)
 	if err != nil {
-		err = errors.Wrapf(err, "unable to read & log response of backend %v(%v)", reqResp.Backend, remoteAddr)
+		err = errors.Wrapf(err, "unable to read & log response of backend %v", reqResp.Backend)
 		log.Fatalf("%+v", err)
 	}
 	reqResp.HandleResponse(responseBytes)
 
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
-	log.Printf("we sent request to backend %v(%v) \n %v", reqResp.Backend, remoteAddr, string(requestBytes))
-	log.Printf("we got response from backend %v(%v) \n %v", reqResp.Backend, remoteAddr, string(responseBytes))
+	log.Printf("we sent request to backend %v \n %v", reqResp.Backend, string(requestBytes))
+	log.Printf("we got response from backend %v \n %v", reqResp.Backend, string(responseBytes))
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 
 	reqResp.L.Lock()
 	reqResp.NoOfAllRequests++
 	reqResp.NoOfAllResponses++
-	log.Printf("lengthOfLargestRequest for backend %v(%v) %v", reqResp.Backend, remoteAddr, reqResp.LengthOfLargestRequest)
-	log.Printf("lengthOfLargestResponse for backend %v(%v) %v", reqResp.Backend, remoteAddr, reqResp.LengthOfLargestResponse)
+	log.Printf("lengthOfLargestRequest for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestRequest)
+	log.Printf("lengthOfLargestResponse for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestResponse)
 	reqResp.L.Unlock()
 }

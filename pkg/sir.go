@@ -2,6 +2,7 @@ package sir
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"sync"
 )
@@ -16,12 +17,21 @@ const (
 	Secondary
 )
 
-func (backend backendType) String() string {
+func (bt backendType) String() string {
 	names := []string{
 		"Candidate",
 		"Primary",
 		"Secondary"}
-	return names[backend]
+	return names[bt]
+}
+
+type Backend struct {
+	Type backendType
+	Addr string
+}
+
+func (b Backend) String() string {
+	return fmt.Sprintf("%v(%v)", b.Type, b.Addr)
 }
 
 type RequestsResponse struct {
@@ -36,7 +46,7 @@ type RequestsResponse struct {
 	LengthOfLargestResponse int
 	ResponsesSlice          [][]byte
 
-	Backend backendType
+	Backend
 }
 
 func (reqResp *RequestsResponse) HandleRequest(requestBuf []byte) {
