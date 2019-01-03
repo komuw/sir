@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
-	"sync"
 	"time"
 
 	"github.com/komuw/sir/pkg"
@@ -34,9 +33,39 @@ func main() {
 	    curl -vL -H "Host: httpbin.org" localhost:7777/get
 	`)
 
+	reqRespCandidate := &sir.RequestsResponses{Backend: sir.Candidate}
+	reqRespPrimary := &sir.RequestsResponses{Backend: sir.Primary}
+	reqRespSecondary := &sir.RequestsResponses{Backend: sir.Secondary}
 	{
-		time.AfterFunc(23*time.Second, clusterAndPlotRequests)
-		time.AfterFunc(23*time.Second, clusterAndPlotResponses)
+		// candidate
+		clusterAndPlotReqCandidate := func() {
+			clusterAndPlotRequests(reqRespCandidate)
+		}
+		clusterAndPlotResCandidate := func() {
+			clusterAndPlotResponses(reqRespCandidate)
+		}
+		time.AfterFunc(23*time.Second, clusterAndPlotReqCandidate)
+		time.AfterFunc(23*time.Second, clusterAndPlotResCandidate)
+
+		// primary
+		clusterAndPlotReqPrimary := func() {
+			clusterAndPlotRequests(reqRespPrimary)
+		}
+		clusterAndPlotResPrimary := func() {
+			clusterAndPlotResponses(reqRespPrimary)
+		}
+		time.AfterFunc(23*time.Second, clusterAndPlotReqPrimary)
+		time.AfterFunc(23*time.Second, clusterAndPlotResPrimary)
+
+		// secondary
+		clusterAndPlotReqSecondary := func() {
+			clusterAndPlotRequests(reqRespSecondary)
+		}
+		clusterAndPlotResSecondary := func() {
+			clusterAndPlotResponses(reqRespSecondary)
+		}
+		time.AfterFunc(23*time.Second, clusterAndPlotReqSecondary)
+		time.AfterFunc(23*time.Second, clusterAndPlotResSecondary)
 	}
 
 	for {
@@ -47,130 +76,77 @@ func main() {
 		log.Printf("ready to accept connections to frontend %v", frontendAddr)
 
 		// TODO: remove the sleeps
-		go forward(frontendConn, candidateBackendAddr, candidate)
+		go forward(frontendConn, candidateBackendAddr, reqRespCandidate)
 		time.Sleep(2 * time.Second)
-		go forward(frontendConn, primaryBackendAddr, primary)
+		go forward(frontendConn, primaryBackendAddr, reqRespPrimary)
 		time.Sleep(2 * time.Second)
-		go forward(frontendConn, secondaryBackendAddr, secondary)
+		go forward(frontendConn, secondaryBackendAddr, reqRespSecondary)
 	}
 }
 
-type requestsResponses struct {
-	l                      sync.RWMutex
-	noOfAllRequests        int
-	allRequests            []float64
-	lengthOfLargestRequest int
-	requestsSlice          [][]byte
-
-	noOfAllResponses        int
-	allResponses            []float64
-	lengthOfLargestResponse int
-	responsesSlice          [][]byte
-}
-
-var reqResp requestsResponses
-
-func clusterAndPlotRequests() {
+func clusterAndPlotRequests(reqResp *sir.RequestsResponses) {
 	appendName := "Requests"
-	reqResp.l.Lock()
-	defer reqResp.l.Unlock()
+	reqResp.L.Lock()
+	defer reqResp.L.Unlock()
 
-	for k, v := range reqResp.requestsSlice {
-		diff := reqResp.lengthOfLargestRequest - len(v)
+	for k, v := range reqResp.RequestsSlice {
+		diff := reqResp.LengthOfLargestRequest - len(v)
 		if diff != 0 {
-			pad := bytes.Repeat([]byte(nulByte), diff)
+			pad := bytes.Repeat([]byte(sir.NulByte), diff)
 			v = append(v, pad...)
-			reqResp.requestsSlice[k] = v
+			reqResp.RequestsSlice[k] = v
 		}
 	}
-	for _, eachRequest := range reqResp.requestsSlice {
+	for _, eachRequest := range reqResp.RequestsSlice {
 		for _, v := range eachRequest {
-			reqResp.allRequests = append(reqResp.allRequests, float64(v))
+			reqResp.AllRequests = append(reqResp.AllRequests, float64(v))
 		}
 	}
-	nclusters, X, err := sir.GetClusters(reqResp.noOfAllRequests, reqResp.lengthOfLargestRequest, reqResp.allRequests, 3.0, 1.0, false, appendName)
+	nclusters, X, err := sir.GetClusters(reqResp.NoOfAllRequests, reqResp.LengthOfLargestRequest, reqResp.AllRequests, 3.0, 1.0, false, appendName)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
 	log.Printf("Requests estimated number of clusters: %d\n", nclusters)
 
-	proj := sir.FindPCA(X, reqResp.lengthOfLargestRequest)
-	err = sir.PlotResultsPCA(reqResp.noOfAllRequests, proj, nclusters, appendName)
+	proj := sir.FindPCA(X, reqResp.LengthOfLargestRequest)
+	err = sir.PlotResultsPCA(reqResp.NoOfAllRequests, proj, nclusters, appendName)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
 }
 
-func clusterAndPlotResponses() {
+func clusterAndPlotResponses(reqResp *sir.RequestsResponses) {
 	appendName := "Responses"
-	reqResp.l.Lock()
-	defer reqResp.l.Unlock()
+	reqResp.L.Lock()
+	defer reqResp.L.Unlock()
 
-	for k, v := range reqResp.responsesSlice {
-		diff := reqResp.lengthOfLargestResponse - len(v)
+	for k, v := range reqResp.ResponsesSlice {
+		diff := reqResp.LengthOfLargestResponse - len(v)
 		if diff != 0 {
-			pad := bytes.Repeat([]byte(nulByte), diff)
+			pad := bytes.Repeat([]byte(sir.NulByte), diff)
 			v = append(v, pad...)
-			reqResp.responsesSlice[k] = v
+			reqResp.ResponsesSlice[k] = v
 		}
 	}
-	for _, eachResponse := range reqResp.responsesSlice {
+	for _, eachResponse := range reqResp.ResponsesSlice {
 		for _, v := range eachResponse {
-			reqResp.allResponses = append(reqResp.allResponses, float64(v))
+			reqResp.AllResponses = append(reqResp.AllResponses, float64(v))
 		}
 	}
-	nclusters, X, err := sir.GetClusters(reqResp.noOfAllResponses, reqResp.lengthOfLargestResponse, reqResp.allResponses, 3.0, 1.0, false, appendName)
+	nclusters, X, err := sir.GetClusters(reqResp.NoOfAllResponses, reqResp.LengthOfLargestResponse, reqResp.AllResponses, 3.0, 1.0, false, appendName)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
 	log.Printf("Responses stimated number of clusters: %d\n", nclusters)
 
-	proj := sir.FindPCA(X, reqResp.lengthOfLargestResponse)
-	err = sir.PlotResultsPCA(reqResp.noOfAllResponses, proj, nclusters, appendName)
+	proj := sir.FindPCA(X, reqResp.LengthOfLargestResponse)
+	err = sir.PlotResultsPCA(reqResp.NoOfAllResponses, proj, nclusters, appendName)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
 }
 
-func handleRequest(requestBuf []byte) {
-	reqResp.l.Lock()
-	defer reqResp.l.Unlock()
-
-	if reqResp.lengthOfLargestRequest < len(requestBuf) {
-		reqResp.lengthOfLargestRequest = len(requestBuf)
-	}
-	reqResp.requestsSlice = append(reqResp.requestsSlice, requestBuf)
-}
-
-func handleResponse(responseBuf []byte) {
-	reqResp.l.Lock()
-	defer reqResp.l.Unlock()
-
-	if reqResp.lengthOfLargestResponse < len(responseBuf) {
-		reqResp.lengthOfLargestResponse = len(responseBuf)
-	}
-	reqResp.responsesSlice = append(reqResp.responsesSlice, responseBuf)
-}
-
-const nulByte = "\x00"
-
-type backendType int
-
-const (
-	candidate backendType = iota
-	primary
-	secondary
-)
-
-func (backend backendType) String() string {
-	names := []string{
-		"candidate",
-		"primary",
-		"secondary"}
-	return names[backend]
-}
-
-func forward(frontendConn net.Conn, remoteAddr string, backend backendType) {
+func forward(frontendConn net.Conn, remoteAddr string, reqResp *sir.RequestsResponses) {
 	defer frontendConn.Close()
 	err := frontendConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
@@ -180,16 +156,16 @@ func forward(frontendConn net.Conn, remoteAddr string, backend backendType) {
 
 	backendConn, err := net.Dial("tcp", remoteAddr)
 	if err != nil {
-		err = errors.Wrapf(err, "dial failed for address %s of backend %v", remoteAddr, backend)
+		err = errors.Wrapf(err, "dial failed for address %s of backend %v", remoteAddr, reqResp.Backend)
 		log.Fatalf("%+v", err)
 	}
 	defer backendConn.Close()
 	err = backendConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
-		err = errors.Wrapf(err, "unable to set backendConn deadline of backend %v", backend)
+		err = errors.Wrapf(err, "unable to set backendConn deadline of backend %v", reqResp.Backend)
 		log.Fatalf("%+v", err)
 	}
-	log.Printf("frontend connected to backend %v(%v)", backend, remoteAddr)
+	log.Printf("frontend connected to backend %v(%v)", reqResp.Backend, remoteAddr)
 
 	requestBuf := new(bytes.Buffer)
 	responseBuf := new(bytes.Buffer)
@@ -217,23 +193,23 @@ func forward(frontendConn net.Conn, remoteAddr string, backend backendType) {
 		err = errors.Wrap(err, "unable to read & log request")
 		log.Fatalf("%+v", err)
 	}
-	requestBytes = bytes.Trim(requestBytes, nulByte)
-	handleRequest(requestBytes)
-	log.Printf("we sent request to backend %v \n %v", backend, string(requestBytes))
+	requestBytes = bytes.Trim(requestBytes, sir.NulByte)
+	reqResp.HandleRequest(requestBytes)
+	log.Printf("we sent request to backend %v \n %v", reqResp.Backend, string(requestBytes))
 
 	responseBytes, err := ioutil.ReadAll(responseBuf)
 	if err != nil {
-		err = errors.Wrapf(err, "unable to read & log response of backend %v", backend)
+		err = errors.Wrapf(err, "unable to read & log response of backend %v", reqResp.Backend)
 		log.Fatalf("%+v", err)
 	}
-	handleResponse(responseBytes)
-	log.Printf("we got response from backend %v \n %v", backend, string(responseBytes))
+	reqResp.HandleResponse(responseBytes)
+	log.Printf("we got response from backend %v \n %v", reqResp.Backend, string(responseBytes))
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 
-	reqResp.l.Lock()
-	reqResp.noOfAllRequests++
-	reqResp.noOfAllResponses++
-	log.Printf("lengthOfLargestRequest for backend %v %v", backend, reqResp.lengthOfLargestRequest)
-	log.Printf("lengthOfLargestResponse for backend %v %v", backend, reqResp.lengthOfLargestResponse)
-	reqResp.l.Unlock()
+	reqResp.L.Lock()
+	reqResp.NoOfAllRequests++
+	reqResp.NoOfAllResponses++
+	log.Printf("lengthOfLargestRequest for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestRequest)
+	log.Printf("lengthOfLargestResponse for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestResponse)
+	reqResp.L.Unlock()
 }
