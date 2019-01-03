@@ -77,12 +77,7 @@ func main() {
 			log.Fatalf("failed to accept listener %v", err)
 		}
 		log.Printf("ready to accept connections to frontend %v", frontendAddr)
-
-		// TODO: remove the sleeps
 		go forward(frontendConn, candidateBackendAddr, reqRespCandidate)
-		time.Sleep(2 * time.Second)
-		// time.Sleep(2 * time.Second)
-		// go forward(frontendConn, secondaryBackendAddr, reqRespSecondary)
 	}
 }
 
@@ -154,8 +149,8 @@ func forward(frontendConn net.Conn, remoteAddr string, reqResp *sir.RequestsResp
 	reqResp.L.Lock()
 	reqResp.NoOfAllRequests++
 	reqResp.NoOfAllResponses++
-	log.Printf("lengthOfLargestRequest for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestRequest)
-	log.Printf("lengthOfLargestResponse for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestResponse)
+	log.Printf("lengthOfLargestRequest for backend %v(%v) %v", reqResp.Backend, remoteAddr, reqResp.LengthOfLargestRequest)
+	log.Printf("lengthOfLargestResponse for backend %v(%v) %v", reqResp.Backend, remoteAddr, reqResp.LengthOfLargestResponse)
 	reqResp.L.Unlock()
 
 	time.Sleep(2 * time.Second)
