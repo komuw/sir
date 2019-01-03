@@ -20,13 +20,15 @@ func main() {
 		  2. curl -vL -H "Host: httpbin.org" localhost:7777/get
 	*/
 	frontendAddr := "localhost:7777"
-	backendAddr := "httpbin.org:80" // why is it that "httpbin.org:443" does not work
+	candidateBackendAddr := "httpbin.org:80"
+	primaryBackendAddr := "httpbin.org:80"
+	secondaryBackendAddr := "httpbin.org:80"
 
 	listener, err := net.Listen("tcp", frontendAddr)
 	if err != nil {
 		log.Fatalf("failed to setup listener %v", err)
 	}
-	log.Println("ReverseProxy Listening on " + frontendAddr)
+	log.Println("Sir Listening on " + frontendAddr)
 	log.Println(`
 	To use it, send a request like:
 	    curl -vL -H "Host: httpbin.org" localhost:7777/get
@@ -42,9 +44,14 @@ func main() {
 		if err != nil {
 			log.Fatalf("failed to accept listener %v", err)
 		}
-		log.Print("Accepted frontendConn")
+		log.Printf("ready to accept connections to frontend %v", frontendAddr)
 
-		go forward(frontendConn, backendAddr)
+		// TODO: remove the sleeps
+		go forward(frontendConn, candidateBackendAddr, candidate)
+		time.Sleep(2 * time.Second)
+		go forward(frontendConn, primaryBackendAddr, primary)
+		time.Sleep(2 * time.Second)
+		go forward(frontendConn, secondaryBackendAddr, secondary)
 	}
 }
 
@@ -147,7 +154,23 @@ func handleResponse(responseBuf []byte) {
 
 const nulByte = "\x00"
 
-func forward(frontendConn net.Conn, remoteAddr string) {
+type backendType int
+
+const (
+	candidate backendType = iota
+	primary
+	secondary
+)
+
+func (backend backendType) String() string {
+	names := []string{
+		"candidate",
+		"primary",
+		"secondary"}
+	return names[backend]
+}
+
+func forward(frontendConn net.Conn, remoteAddr string, backend backendType) {
 	defer frontendConn.Close()
 	err := frontendConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
@@ -157,16 +180,16 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 
 	backendConn, err := net.Dial("tcp", remoteAddr)
 	if err != nil {
-		err = errors.Wrap(err, "dial failed for address"+remoteAddr)
+		err = errors.Wrapf(err, "dial failed for address %s of backend %v", remoteAddr, backend)
 		log.Fatalf("%+v", err)
 	}
 	defer backendConn.Close()
 	err = backendConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
-		err = errors.Wrap(err, "unable to set backendConn deadline")
+		err = errors.Wrapf(err, "unable to set backendConn deadline of backend %v", backend)
 		log.Fatalf("%+v", err)
 	}
-	log.Print("frontendConnected")
+	log.Printf("frontend connected to backend %v(%v)", backend, remoteAddr)
 
 	requestBuf := new(bytes.Buffer)
 	responseBuf := new(bytes.Buffer)
@@ -196,21 +219,21 @@ func forward(frontendConn net.Conn, remoteAddr string) {
 	}
 	requestBytes = bytes.Trim(requestBytes, nulByte)
 	handleRequest(requestBytes)
-	log.Println("we sent request::", string(requestBytes))
+	log.Printf("we sent request to backend %v \n %v", backend, string(requestBytes))
 
 	responseBytes, err := ioutil.ReadAll(responseBuf)
 	if err != nil {
-		err = errors.Wrap(err, "unable to read & log response")
+		err = errors.Wrapf(err, "unable to read & log response of backend %v", backend)
 		log.Fatalf("%+v", err)
 	}
 	handleResponse(responseBytes)
-	log.Println("we got response::", string(responseBytes))
+	log.Printf("we got response from backend %v \n %v", backend, string(responseBytes))
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 
 	reqResp.l.Lock()
 	reqResp.noOfAllRequests++
 	reqResp.noOfAllResponses++
-	log.Println("lengthOfLargestRequest:", reqResp.lengthOfLargestRequest)
-	log.Println("lengthOfLargestResponse:", reqResp.lengthOfLargestResponse)
+	log.Printf("lengthOfLargestRequest for backend %v %v", backend, reqResp.lengthOfLargestRequest)
+	log.Printf("lengthOfLargestResponse for backend %v %v", backend, reqResp.lengthOfLargestResponse)
 	reqResp.l.Unlock()
 }
