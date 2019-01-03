@@ -10,7 +10,7 @@ jobs:
     steps:
         - checkout
         - run:
-            name: install apt and pip deps
+            name: install apt deps
             command: |
                 pwd; ls -lsha
                 apt-get -y update
