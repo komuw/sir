@@ -55,14 +55,13 @@ func PlotResultsPCA(noOfRequests int, X *mat.Dense, nclusters int, appendName st
 }
 
 func FindPCA(X *mat.Dense, d int) *mat.Dense {
-	// Calculate the principal component direction vectors
-	// and variances.
+	// Calculate the principal component direction vectors and variances.
 	var pc stat.PC
 	ok := pc.PrincipalComponents(X, nil)
 	if !ok {
 		log.Fatal(errors.New("unable to get PrincipalComponents"))
 	}
-	log.Println("variances ", pc.VarsTo(nil))
+	// log.Println("variances ", pc.VarsTo(nil))
 
 	k := 2
 	var proj mat.Dense
