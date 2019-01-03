@@ -33,9 +33,9 @@ func main() {
 	    curl -vL -H "Host: httpbin.org" localhost:7777/get
 	`)
 
-	reqRespCandidate := &sir.RequestsResponses{Backend: sir.Candidate}
-	reqRespPrimary := &sir.RequestsResponses{Backend: sir.Primary}
-	reqRespSecondary := &sir.RequestsResponses{Backend: sir.Secondary}
+	reqRespCandidate := &sir.RequestsResponse{Backend: sir.Candidate}
+	reqRespPrimary := &sir.RequestsResponse{Backend: sir.Primary}
+	reqRespSecondary := &sir.RequestsResponse{Backend: sir.Secondary}
 	{
 		// candidate
 		clusterAndPlotReqCandidate := func() {
@@ -88,7 +88,7 @@ func main() {
 	}
 }
 
-func forward(frontendConn net.Conn, remoteAddr string, reqResp *sir.RequestsResponses) {
+func forward(frontendConn net.Conn, remoteAddr string, reqResp *sir.RequestsResponse) {
 	defer frontendConn.Close()
 	err := frontendConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {

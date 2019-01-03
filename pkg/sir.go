@@ -24,7 +24,7 @@ func (backend backendType) String() string {
 	return names[backend]
 }
 
-type RequestsResponses struct {
+type RequestsResponse struct {
 	L                      sync.RWMutex
 	NoOfAllRequests        int
 	AllRequests            []float64
@@ -39,7 +39,7 @@ type RequestsResponses struct {
 	Backend backendType
 }
 
-func (reqResp *RequestsResponses) HandleRequest(requestBuf []byte) {
+func (reqResp *RequestsResponse) HandleRequest(requestBuf []byte) {
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
 
@@ -49,7 +49,7 @@ func (reqResp *RequestsResponses) HandleRequest(requestBuf []byte) {
 	reqResp.RequestsSlice = append(reqResp.RequestsSlice, requestBuf)
 }
 
-func (reqResp *RequestsResponses) HandleResponse(responseBuf []byte) {
+func (reqResp *RequestsResponse) HandleResponse(responseBuf []byte) {
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
 
@@ -59,7 +59,7 @@ func (reqResp *RequestsResponses) HandleResponse(responseBuf []byte) {
 	reqResp.ResponsesSlice = append(reqResp.ResponsesSlice, responseBuf)
 }
 
-func (reqResp *RequestsResponses) ClusterAndPlotRequests() {
+func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 	appendName := "Requests"
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
@@ -90,7 +90,7 @@ func (reqResp *RequestsResponses) ClusterAndPlotRequests() {
 	}
 }
 
-func (reqResp *RequestsResponses) ClusterAndPlotResponses() {
+func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
 	appendName := "Responses"
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
