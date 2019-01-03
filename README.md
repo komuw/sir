@@ -46,6 +46,6 @@ The premise for Sir is that:
 
 
 #### prior art
-1. https://github.com/twitter/diffy      
+1. https://github.com/twitter/diffy (https://github.com/opendiffy/diffy)     
 
 
