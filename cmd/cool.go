@@ -18,7 +18,7 @@ func primaryForward(requestBytes []byte, remoteAddr string, reqResp *sir.Request
 		log.Fatalf("%+v", err)
 	}
 	defer backendConn.Close()
-	err = backendConn.SetDeadline(time.Now().Add(25 * time.Second))
+	err = backendConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
 		err = errors.Wrapf(err, "unable to set backendConn deadline of backend %v", reqResp.Backend)
 		log.Fatalf("%+v", err)
@@ -30,25 +30,14 @@ func primaryForward(requestBytes []byte, remoteAddr string, reqResp *sir.Request
 		err = errors.Wrapf(err, "backendConn.Write of backend %v failrd", reqResp.Backend)
 		log.Fatalf("%+v", err)
 	}
-	log.Printf("wrote %v", wrote)
+	log.Printf("wrote %v bytes to backend %v(%v)", wrote, reqResp.Backend, remoteAddr)
 
-	/////
-	// reply := make([]byte, 1024)
-
-	// _, err = conn.Read(reply)
-	// if err != nil {
-	// 	println("Write to server failed:", err.Error())
-	// 	os.Exit(1)
-	// }
-
-	////
-	// respBuf := new(bytes.Buffer)
 	respBytes, err := ioutil.ReadAll(backendConn)
 	if err != nil {
-		err = errors.Wrapf(err, "unable to read & log response of backend %v", reqResp.Backend)
+		err = errors.Wrapf(err, "unable to read & log response of backend %v(%v)", reqResp.Backend, remoteAddr)
 		log.Fatalf("%+v", err)
 	}
-	log.Println("respBytes::", respBytes, string(respBytes))
+	log.Printf("read from backend %v(%v) \n%v", reqResp.Backend, remoteAddr, string(respBytes))
 
 	// requestBuf := new(bytes.Buffer)
 	// responseBuf := new(bytes.Buffer)
