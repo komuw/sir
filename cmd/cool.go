@@ -10,8 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func primaryForward(requestBytes []byte, remoteAddr string, reqResp *sir.RequestsResponse) {
-	log.Println("requestBytes::", requestBytes, string(requestBytes))
+func priSecForward(requestBytes []byte, remoteAddr string, reqResp *sir.RequestsResponse) {
 	backendConn, err := net.Dial("tcp", remoteAddr)
 	if err != nil {
 		err = errors.Wrapf(err, "dial failed for address %s of backend %v", remoteAddr, reqResp.Backend)
@@ -25,19 +24,21 @@ func primaryForward(requestBytes []byte, remoteAddr string, reqResp *sir.Request
 	}
 	log.Printf("frontend connected to backend %v(%v)", reqResp.Backend, remoteAddr)
 
-	wrote, err := backendConn.Write(requestBytes)
+	_, err = backendConn.Write(requestBytes)
 	if err != nil {
 		err = errors.Wrapf(err, "backendConn.Write of backend %v failrd", reqResp.Backend)
 		log.Fatalf("%+v", err)
 	}
-	log.Printf("wrote %v bytes to backend %v(%v)", wrote, reqResp.Backend, remoteAddr)
+	reqResp.HandleRequest(requestBytes)
+	log.Printf("we sent request to backend %v(%v) \n %v", reqResp.Backend, remoteAddr, string(requestBytes))
 
-	respBytes, err := ioutil.ReadAll(backendConn)
+	responseBytes, err := ioutil.ReadAll(backendConn)
 	if err != nil {
 		err = errors.Wrapf(err, "unable to read & log response of backend %v(%v)", reqResp.Backend, remoteAddr)
 		log.Fatalf("%+v", err)
 	}
-	log.Printf("read from backend %v(%v) \n%v", reqResp.Backend, remoteAddr, string(respBytes))
+	reqResp.HandleResponse(responseBytes)
+	log.Printf("we got response from backend %v(%v) \n %v", reqResp.Backend, remoteAddr, string(responseBytes))
 
 	// requestBuf := new(bytes.Buffer)
 	// responseBuf := new(bytes.Buffer)

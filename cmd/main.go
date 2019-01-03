@@ -87,7 +87,9 @@ func main() {
 }
 
 var primaryBackendAddr = "google.com:80"
+var secondaryBackendAddr = "google.com:80" //"bing.com:80"
 var reqRespPrimary = &sir.RequestsResponse{Backend: sir.Primary}
+var reqRespSecondary = &sir.RequestsResponse{Backend: sir.Secondary}
 
 func forward(frontendConn net.Conn, remoteAddr string, reqResp *sir.RequestsResponse) {
 	defer frontendConn.Close()
@@ -138,7 +140,7 @@ func forward(frontendConn net.Conn, remoteAddr string, reqResp *sir.RequestsResp
 	}
 	requestBytes = bytes.Trim(requestBytes, sir.NulByte)
 	reqResp.HandleRequest(requestBytes)
-	log.Printf("we sent request to backend %v \n %v", reqResp.Backend, string(requestBytes))
+	log.Printf("we sent request to backend %v(%v) \n %v", reqResp.Backend, remoteAddr, string(requestBytes))
 
 	responseBytes, err := ioutil.ReadAll(responseBuf)
 	if err != nil {
@@ -146,7 +148,7 @@ func forward(frontendConn net.Conn, remoteAddr string, reqResp *sir.RequestsResp
 		log.Fatalf("%+v", err)
 	}
 	reqResp.HandleResponse(responseBytes)
-	log.Printf("we got response from backend %v \n %v", reqResp.Backend, string(responseBytes))
+	log.Printf("we got response from backend %v(%v) \n %v", reqResp.Backend, remoteAddr, string(responseBytes))
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 
 	reqResp.L.Lock()
@@ -157,5 +159,7 @@ func forward(frontendConn net.Conn, remoteAddr string, reqResp *sir.RequestsResp
 	reqResp.L.Unlock()
 
 	time.Sleep(2 * time.Second)
-	go primaryForward(requestBytes, primaryBackendAddr, reqRespPrimary)
+	go priSecForward(requestBytes, primaryBackendAddr, reqRespPrimary)
+	time.Sleep(2 * time.Second)
+	go priSecForward(requestBytes, secondaryBackendAddr, reqRespSecondary)
 }
