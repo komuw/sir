@@ -71,7 +71,7 @@ func (reqResp *RequestsResponse) HandleResponse(responseBuf []byte) {
 
 // TODO: this should return error
 func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
-	appendName := "Requests"
+	appendName := "Requests:" + fmt.Sprint(reqResp.Backend)
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
 
@@ -103,7 +103,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 }
 
 func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
-	appendName := "Responses"
+	appendName := "Responses:" + fmt.Sprint(reqResp.Backend)
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
 
