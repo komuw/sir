@@ -59,6 +59,7 @@ func (reqResp *RequestsResponse) HandleResponse(responseBuf []byte) {
 	reqResp.ResponsesSlice = append(reqResp.ResponsesSlice, responseBuf)
 }
 
+// TODO: this should return error
 func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 	appendName := "Requests"
 	reqResp.L.Lock()
@@ -81,7 +82,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
-	log.Printf("Requests estimated number of clusters: %d\n", nclusters)
+	log.Printf("Requests estimated number of clusters for backend %v: %d \n", reqResp.Backend, nclusters)
 
 	proj := FindPCA(X, reqResp.LengthOfLargestRequest)
 	err = PlotResultsPCA(reqResp.NoOfAllRequests, proj, nclusters, appendName)
@@ -112,7 +113,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
-	log.Printf("Responses stimated number of clusters: %d\n", nclusters)
+	log.Printf("Responses stimated number of clusters for backend %v: %d\n", reqResp.Backend, nclusters)
 
 	proj := FindPCA(X, reqResp.LengthOfLargestResponse)
 	err = PlotResultsPCA(reqResp.NoOfAllResponses, proj, nclusters, appendName)
