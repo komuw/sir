@@ -1,4 +1,4 @@
-Thank you for contributing to [Sir](https://github.com/komuw/sir/pull/11).                     
+Thank you for contributing to [Sir](https://github.com/komuw/sir).                     
 
 
 ## What have you changed/added/removed?
