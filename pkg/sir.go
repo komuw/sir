@@ -75,6 +75,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
 
+	log.Printf("lengthOfLargestRequest for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestRequest)
 	for k, v := range reqResp.RequestsSlice {
 		diff := reqResp.LengthOfLargestRequest - len(v)
 		if diff != 0 {
@@ -106,6 +107,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
 
+	log.Printf("lengthOfLargestResponse for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestResponse)
 	for k, v := range reqResp.ResponsesSlice {
 		diff := reqResp.LengthOfLargestResponse - len(v)
 		if diff != 0 {
