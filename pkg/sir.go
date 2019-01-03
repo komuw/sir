@@ -2,6 +2,7 @@ package sir
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"sync"
 )
@@ -16,12 +17,21 @@ const (
 	Secondary
 )
 
-func (backend backendType) String() string {
+func (bt backendType) String() string {
 	names := []string{
 		"Candidate",
 		"Primary",
 		"Secondary"}
-	return names[backend]
+	return names[bt]
+}
+
+type Backend struct {
+	Type backendType
+	Addr string
+}
+
+func (b Backend) String() string {
+	return fmt.Sprintf("%v(%v)", b.Type, b.Addr)
 }
 
 type RequestsResponse struct {
@@ -36,7 +46,7 @@ type RequestsResponse struct {
 	LengthOfLargestResponse int
 	ResponsesSlice          [][]byte
 
-	Backend backendType
+	Backend
 }
 
 func (reqResp *RequestsResponse) HandleRequest(requestBuf []byte) {
@@ -59,11 +69,13 @@ func (reqResp *RequestsResponse) HandleResponse(responseBuf []byte) {
 	reqResp.ResponsesSlice = append(reqResp.ResponsesSlice, responseBuf)
 }
 
+// TODO: this should return error
 func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 	appendName := "Requests"
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
 
+	log.Printf("lengthOfLargestRequest for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestRequest)
 	for k, v := range reqResp.RequestsSlice {
 		diff := reqResp.LengthOfLargestRequest - len(v)
 		if diff != 0 {
@@ -81,7 +93,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
-	log.Printf("Requests estimated number of clusters: %d\n", nclusters)
+	log.Printf("Requests estimated number of clusters for backend %v: %d \n", reqResp.Backend, nclusters)
 
 	proj := FindPCA(X, reqResp.LengthOfLargestRequest)
 	err = PlotResultsPCA(reqResp.NoOfAllRequests, proj, nclusters, appendName)
@@ -95,6 +107,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
 
+	log.Printf("lengthOfLargestResponse for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestResponse)
 	for k, v := range reqResp.ResponsesSlice {
 		diff := reqResp.LengthOfLargestResponse - len(v)
 		if diff != 0 {
@@ -112,7 +125,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
-	log.Printf("Responses stimated number of clusters: %d\n", nclusters)
+	log.Printf("Responses stimated number of clusters for backend %v: %d\n", reqResp.Backend, nclusters)
 
 	proj := FindPCA(X, reqResp.LengthOfLargestResponse)
 	err = PlotResultsPCA(reqResp.NoOfAllResponses, proj, nclusters, appendName)
