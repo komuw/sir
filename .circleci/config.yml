@@ -18,6 +18,7 @@ jobs:
                             curl \
                             wget \
                             git \
+                            build-essential \
                             nano
 
         - run:
