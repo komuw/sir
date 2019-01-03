@@ -17,10 +17,7 @@ jobs:
                 apt -y install \
                             curl \
                             wget \
-                            git \
-                            nano \
-                            apt-transport-https \
-                            ca-certificates
+                            nano
 
         - run:
             name: install golang
