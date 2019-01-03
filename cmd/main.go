@@ -23,16 +23,6 @@ func main() {
 	primaryBackendAddr := "httpbin.org:80"
 	secondaryBackendAddr := "httpbin.org:80"
 
-	listener, err := net.Listen("tcp", frontendAddr)
-	if err != nil {
-		log.Fatalf("failed to setup listener %v", err)
-	}
-	log.Println("Sir Listening on " + frontendAddr)
-	log.Println(`
-	To use it, send a request like:
-	    curl -vL -H "Host: httpbin.org" localhost:7777/get
-	`)
-
 	reqRespCandidate := &sir.RequestsResponse{Backend: sir.Candidate}
 	reqRespPrimary := &sir.RequestsResponse{Backend: sir.Primary}
 	reqRespSecondary := &sir.RequestsResponse{Backend: sir.Secondary}
@@ -71,6 +61,16 @@ func main() {
 		//1. this time.AfterFuncs should all be scheduled to run at the same time
 		//2. actually, we should not be using time.AfterFunc at all; but some other mechanism
 	}
+
+	listener, err := net.Listen("tcp", frontendAddr)
+	if err != nil {
+		log.Fatalf("failed to setup listener %v", err)
+	}
+	log.Println("Sir Listening on " + frontendAddr)
+	log.Println(`
+	To use it, send a request like:
+	    curl -vL -H "Host: httpbin.org" localhost:7777/get
+	`)
 
 	for {
 		frontendConn, err := listener.Accept()
