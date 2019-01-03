@@ -36,9 +36,9 @@ func PlotPlainScatter(labelsmap map[int]int, noOfAllRequests int, labels []int, 
 				data = append(data, struct{ X, Y float64 }{X.At(sample, 0), X.At(sample, 1)})
 			}
 		}
-		s, shadoErr := plotter.NewScatter(data)
-		if shadoErr != nil {
-			return errors.Wrap(shadoErr, "error instantiating plotter.NewScatter")
+		s, shadowErr := plotter.NewScatter(data)
+		if shadowErr != nil {
+			return errors.Wrap(shadowErr, "error instantiating plotter.NewScatter")
 		}
 		var color0 color.RGBA
 		switch cl {
