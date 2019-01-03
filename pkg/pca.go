@@ -39,8 +39,7 @@ func PlotResultsPCA(noOfRequests int, X *mat.Dense, nclusters int, appendName st
 	if err != nil {
 		return errors.Wrap(err, "error instantiating plotter.NewScatter")
 	}
-	var color0 color.RGBA
-	color0 = color.RGBA{176, 0, 0, 255}
+	color0 := color.RGBA{176, 0, 0, 255}
 	s.GlyphStyle.Color = color0
 	s.GlyphStyle.Shape = draw.CircleGlyph{}
 	pt.Add(s)
