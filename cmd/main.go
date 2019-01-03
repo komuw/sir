@@ -20,47 +20,46 @@ func main() {
 	*/
 	frontendAddr := "localhost:7777"
 	candidateBackendAddr := "httpbin.org:80"
-	primaryBackendAddr := "httpbin.org:80"
-	secondaryBackendAddr := "httpbin.org:80"
+
+	// secondaryBackendAddr := "httpbin.org:80"
 
 	reqRespCandidate := &sir.RequestsResponse{Backend: sir.Candidate}
-	reqRespPrimary := &sir.RequestsResponse{Backend: sir.Primary}
-	reqRespSecondary := &sir.RequestsResponse{Backend: sir.Secondary}
-	{
-		// candidate
-		clusterAndPlotReqCandidate := func() {
-			reqRespCandidate.ClusterAndPlotRequests()
-		}
-		clusterAndPlotResCandidate := func() {
-			reqRespCandidate.ClusterAndPlotResponses()
-		}
-		time.AfterFunc(23*time.Second, clusterAndPlotReqCandidate)
-		time.AfterFunc(23*time.Second, clusterAndPlotResCandidate)
+	// reqRespSecondary := &sir.RequestsResponse{Backend: sir.Secondary}
+	// {
+	// 	// candidate
+	// 	clusterAndPlotReqCandidate := func() {
+	// 		reqRespCandidate.ClusterAndPlotRequests()
+	// 	}
+	// 	clusterAndPlotResCandidate := func() {
+	// 		reqRespCandidate.ClusterAndPlotResponses()
+	// 	}
+	// 	time.AfterFunc(23*time.Second, clusterAndPlotReqCandidate)
+	// 	time.AfterFunc(23*time.Second, clusterAndPlotResCandidate)
 
-		// primary
-		clusterAndPlotReqPrimary := func() {
-			reqRespPrimary.ClusterAndPlotRequests()
-		}
-		clusterAndPlotResPrimary := func() {
-			reqRespPrimary.ClusterAndPlotResponses()
-		}
-		time.AfterFunc(25*time.Second, clusterAndPlotReqPrimary)
-		time.AfterFunc(25*time.Second, clusterAndPlotResPrimary)
+	// 	// primary
+	// 	clusterAndPlotReqPrimary := func() {
+	// 		reqRespPrimary.ClusterAndPlotRequests()
+	// 	}
+	// 	clusterAndPlotResPrimary := func() {
+	// 		reqRespPrimary.ClusterAndPlotResponses()
+	// 	}
+	// 	time.AfterFunc(25*time.Second, clusterAndPlotReqPrimary)
+	// 	time.AfterFunc(25*time.Second, clusterAndPlotResPrimary)
 
-		// secondary
-		clusterAndPlotReqSecondary := func() {
-			reqRespSecondary.ClusterAndPlotRequests()
-		}
-		clusterAndPlotResSecondary := func() {
-			reqRespSecondary.ClusterAndPlotResponses()
-		}
-		time.AfterFunc(27*time.Second, clusterAndPlotReqSecondary)
-		time.AfterFunc(27*time.Second, clusterAndPlotResSecondary)
+	// 	// secondary
+	// 	clusterAndPlotReqSecondary := func() {
+	// 		reqRespSecondary.ClusterAndPlotRequests()
+	// 	}
+	// 	clusterAndPlotResSecondary := func() {
+	// 		reqRespSecondary.ClusterAndPlotResponses()
+	// 	}
+	// 	time.AfterFunc(27*time.Second, clusterAndPlotReqSecondary)
+	// 	time.AfterFunc(27*time.Second, clusterAndPlotResSecondary)
 
-		//TODO:
-		//1. this time.AfterFuncs should all be scheduled to run at the same time
-		//2. actually, we should not be using time.AfterFunc at all; but some other mechanism
-	}
+	// 	//TODO:
+	// 	//1. this time.AfterFuncs should all be scheduled to run at the same time
+	// 	//2. actually, we should not be using time.AfterFunc at all; but some other mechanism
+	// }
 
 	listener, err := net.Listen("tcp", frontendAddr)
 	if err != nil {
@@ -82,11 +81,13 @@ func main() {
 		// TODO: remove the sleeps
 		go forward(frontendConn, candidateBackendAddr, reqRespCandidate)
 		time.Sleep(2 * time.Second)
-		go forward(frontendConn, primaryBackendAddr, reqRespPrimary)
-		time.Sleep(2 * time.Second)
-		go forward(frontendConn, secondaryBackendAddr, reqRespSecondary)
+		// time.Sleep(2 * time.Second)
+		// go forward(frontendConn, secondaryBackendAddr, reqRespSecondary)
 	}
 }
+
+var primaryBackendAddr = "google.com:80"
+var reqRespPrimary = &sir.RequestsResponse{Backend: sir.Primary}
 
 func forward(frontendConn net.Conn, remoteAddr string, reqResp *sir.RequestsResponse) {
 	defer frontendConn.Close()
@@ -154,4 +155,7 @@ func forward(frontendConn net.Conn, remoteAddr string, reqResp *sir.RequestsResp
 	log.Printf("lengthOfLargestRequest for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestRequest)
 	log.Printf("lengthOfLargestResponse for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestResponse)
 	reqResp.L.Unlock()
+
+	time.Sleep(2 * time.Second)
+	go primaryForward(requestBytes, primaryBackendAddr, reqRespPrimary)
 }
