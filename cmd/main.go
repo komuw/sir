@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -66,18 +65,20 @@ func main() {
 
 	listener, err := net.Listen("tcp", frontendAddr)
 	if err != nil {
-		log.Fatalf("failed to setup listener %v", err)
+		err = errors.Wrapf(err, "failed to setup listener for address %v", frontendAddr)
+		log.Fatalf("%+v", err)
 	}
-	log.Println("Sir Listening on " + frontendAddr)
-	log.Println(`
+	log.Printf(`
+	Sir is running and listening on %v
 	To use it, send a request like:
 	    curl -vL -H "Host: httpbin.org" localhost:7777/get
-	`)
+	`, frontendAddr)
 
 	for {
 		frontendConn, err := listener.Accept()
 		if err != nil {
-			log.Fatalf("failed to accept listener %v", err)
+			err = errors.Wrapf(err, "failed to accept listener for address %v", frontendAddr)
+			log.Fatalf("%+v", err)
 		}
 		log.Printf("ready to accept connections to frontend %v", frontendAddr)
 		var rb = make(chan []byte)
@@ -86,10 +87,6 @@ func main() {
 		go priSecForward(request, reqRespPrimary)
 		time.Sleep(3 * time.Second) // TODO: remove this sleeps
 		go priSecForward(request, reqRespSecondary)
-
-		fmt.Println()
-		fmt.Println("request", request, string(request))
-		fmt.Println()
 	}
 }
 
@@ -97,7 +94,7 @@ func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byt
 	defer frontendConn.Close()
 	err := frontendConn.SetDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
-		err = errors.Wrap(err, "unable to set reverseProxyConn deadline")
+		err = errors.Wrap(err, "unable to set frontendConn deadline")
 		log.Fatalf("%+v", err)
 	}
 
