@@ -19,9 +19,9 @@ func main() {
 		  2. curl -vL -H "Host: httpbin.org" localhost:7777/get
 	*/
 	frontendAddr := "localhost:7777"
-	candidateBackendAddr := "httpbin.org:80"
-	primaryBackendAddr := "google.com:80"
-	secondaryBackendAddr := "google.com:80" //"bing.com:80"
+	candidateBackendAddr := "localhost:3001" //"httpbin.org:80"
+	primaryBackendAddr := "localhost:3002"   //"google.com:80"
+	secondaryBackendAddr := "localhost:3003" //"bing.com:80"
 
 	reqRespCandidate := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Candidate, Addr: candidateBackendAddr}}
 	reqRespPrimary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Primary, Addr: primaryBackendAddr}}
