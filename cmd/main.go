@@ -38,8 +38,8 @@ func main() {
 		clusterAndPlotResCandidate := func() {
 			reqRespCandidate.ClusterAndPlotResponses()
 		}
-		time.AfterFunc(65*time.Second, clusterAndPlotReqCandidate)
-		time.AfterFunc(65*time.Second, clusterAndPlotResCandidate)
+		time.AfterFunc(70*time.Second, clusterAndPlotReqCandidate)
+		time.AfterFunc(70*time.Second, clusterAndPlotResCandidate)
 
 		// primary
 		clusterAndPlotReqPrimary := func() {
@@ -48,8 +48,8 @@ func main() {
 		clusterAndPlotResPrimary := func() {
 			reqRespPrimary.ClusterAndPlotResponses()
 		}
-		time.AfterFunc(67*time.Second, clusterAndPlotReqPrimary)
-		time.AfterFunc(67*time.Second, clusterAndPlotResPrimary)
+		time.AfterFunc(72*time.Second, clusterAndPlotReqPrimary)
+		time.AfterFunc(72*time.Second, clusterAndPlotResPrimary)
 
 		// secondary
 		clusterAndPlotReqSecondary := func() {
@@ -58,8 +58,8 @@ func main() {
 		clusterAndPlotResSecondary := func() {
 			reqRespSecondary.ClusterAndPlotResponses()
 		}
-		time.AfterFunc(69*time.Second, clusterAndPlotReqSecondary)
-		time.AfterFunc(69*time.Second, clusterAndPlotResSecondary)
+		time.AfterFunc(73*time.Second, clusterAndPlotReqSecondary)
+		time.AfterFunc(73*time.Second, clusterAndPlotResSecondary)
 
 		//TODO:
 		//1. this time.AfterFuncs should all be scheduled to run at the same time
