@@ -18,7 +18,10 @@ usage:
 	localhost:3000/post
 
 build:
-  go build -o proxyd/mockproxy proxyd/main.go
+  export GOOS=linux && \
+  export GOARCH=amd64 && \
+  export CGO_ENABLED=0 && \
+  go build -ldflags="-s -w" -o proxyd/mockproxy proxyd/main.go
 */
 var norequets uint16
 
