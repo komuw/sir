@@ -16,7 +16,12 @@ usage:
 	-H "Host: httpbin.org" \
 	-d '{"name":"longerRequest"}' \
 	localhost:3000/post
+
+build:
+  go build -o proxyd/mockproxy proxyd/main.go
 */
+var norequets uint16
+
 func main() {
 	http.HandleFunc("/post", echoHandler)
 
@@ -48,4 +53,7 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(reqBytes)
+
+	norequets++
+	log.Printf("succesfully handled request number %v", norequets)
 }
