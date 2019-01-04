@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+
+  candidate:
+    build:
+      context: ./proxyd
+      dockerfile: Dockerfile
+    ports:
+      - 3001:3000
+    environment:
+      - SERVERNAME=candidate 
+
+  primary:
+    build:
+      context: ./proxyd
+      dockerfile: Dockerfile
+    ports:
+      - 3002:3000
+    environment:
+      - SERVERNAME=primary
+
+  secondary:
+    build:
+      context: ./proxyd
+      dockerfile: Dockerfile
+    ports:
+      - 3003:3000
+    environment:
+      - SERVERNAME=secondary

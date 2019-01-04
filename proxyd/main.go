@@ -4,12 +4,14 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/pkg/errors"
 )
 
 /*
 usage:
+  export SERVERNAME=candidate && go run -race proxyd/main.go
   curl -vL \
 	-H "accept: application/json" \
 	-H "Content-Type: application/json" \
@@ -58,5 +60,6 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(reqBytes)
 
 	norequets++
-	log.Printf("succesfully handled request number %v", norequets)
+	serverName, _ := os.LookupEnv("SERVERNAME")
+	log.Printf("%v succesfully handled request number %v", serverName, norequets)
 }
