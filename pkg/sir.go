@@ -57,6 +57,7 @@ func (reqResp *RequestsResponse) HandleRequest(requestBuf []byte) {
 		reqResp.LengthOfLargestRequest = len(requestBuf)
 	}
 	reqResp.RequestsSlice = append(reqResp.RequestsSlice, requestBuf)
+	reqResp.NoOfAllRequests++
 }
 
 func (reqResp *RequestsResponse) HandleResponse(responseBuf []byte) {
@@ -67,6 +68,7 @@ func (reqResp *RequestsResponse) HandleResponse(responseBuf []byte) {
 		reqResp.LengthOfLargestResponse = len(responseBuf)
 	}
 	reqResp.ResponsesSlice = append(reqResp.ResponsesSlice, responseBuf)
+	reqResp.NoOfAllResponses++
 }
 
 // TODO: this should return error

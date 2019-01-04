@@ -35,8 +35,8 @@ func main() {
 		clusterAndPlotResCandidate := func() {
 			reqRespCandidate.ClusterAndPlotResponses()
 		}
-		time.AfterFunc(23*time.Second, clusterAndPlotReqCandidate)
-		time.AfterFunc(23*time.Second, clusterAndPlotResCandidate)
+		time.AfterFunc(105*time.Second, clusterAndPlotReqCandidate)
+		time.AfterFunc(105*time.Second, clusterAndPlotResCandidate)
 
 		// primary
 		clusterAndPlotReqPrimary := func() {
@@ -45,8 +45,8 @@ func main() {
 		clusterAndPlotResPrimary := func() {
 			reqRespPrimary.ClusterAndPlotResponses()
 		}
-		time.AfterFunc(25*time.Second, clusterAndPlotReqPrimary)
-		time.AfterFunc(25*time.Second, clusterAndPlotResPrimary)
+		time.AfterFunc(110*time.Second, clusterAndPlotReqPrimary)
+		time.AfterFunc(110*time.Second, clusterAndPlotResPrimary)
 
 		// secondary
 		clusterAndPlotReqSecondary := func() {
@@ -55,8 +55,8 @@ func main() {
 		clusterAndPlotResSecondary := func() {
 			reqRespSecondary.ClusterAndPlotResponses()
 		}
-		time.AfterFunc(27*time.Second, clusterAndPlotReqSecondary)
-		time.AfterFunc(27*time.Second, clusterAndPlotResSecondary)
+		time.AfterFunc(113*time.Second, clusterAndPlotReqSecondary)
+		time.AfterFunc(113*time.Second, clusterAndPlotResSecondary)
 
 		//TODO:
 		//1. this time.AfterFuncs should all be scheduled to run at the same time
@@ -113,20 +113,20 @@ func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byt
 
 	requestBuf := new(bytes.Buffer)
 	responseBuf := new(bytes.Buffer)
-	ch := make(chan bool)
+	ch := make(chan struct{}, 2)
 
 	// forward data from client to server
 	go func() {
 		tee := io.TeeReader(frontendConn, requestBuf)
 		io.Copy(backendConn, tee)
-		ch <- true
+		ch <- struct{}{}
 	}()
 
 	// forward data from server to client
 	go func() {
 		tee := io.TeeReader(backendConn, responseBuf)
 		io.Copy(frontendConn, tee)
-		ch <- true
+		ch <- struct{}{}
 	}()
 
 	<-ch
