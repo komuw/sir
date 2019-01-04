@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -47,6 +48,7 @@ func main() {
 }
 
 func echoHandler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
 	reqBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		err = errors.Wrap(err, "unable to read request body")
@@ -56,10 +58,11 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Connection", "close") // important so that clients do not have to wait
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(reqBytes)
 
 	norequets++
 	serverName, _ := os.LookupEnv("SERVERNAME")
-	log.Printf("%v succesfully handled request number %v", serverName, norequets)
+	log.Printf("%v succesfully handled request number %v in %v secs", serverName, norequets, time.Since(start).Seconds())
 }
