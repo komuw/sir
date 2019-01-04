@@ -4,7 +4,7 @@
 # go run -race reverse.go -p localhost:7777 -r httpbin.org:443
 # bash send_curl.sh
 
-for i in {1..3}
+for i in {1..6}
 do
    printf "\n sending request:: \n"
    curl -vL \
@@ -15,7 +15,7 @@ do
    localhost:7777/post
 done
 
-for i in {1..2}
+for i in {1..8}
 do
    printf "\n sending request:: \n"
    curl -vL \
@@ -26,7 +26,7 @@ do
    localhost:7777/post
 done
 
-for i in {1..4}
+for i in {1..7}
 do
    printf "\n sending request:: \n"
    curl -vL \

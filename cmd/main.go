@@ -12,6 +12,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// TODO: make this configurable
+const netTimeouts = 6 * time.Second
+
 func main() {
 	/*
 		usage:
@@ -35,8 +38,8 @@ func main() {
 		clusterAndPlotResCandidate := func() {
 			reqRespCandidate.ClusterAndPlotResponses()
 		}
-		time.AfterFunc(105*time.Second, clusterAndPlotReqCandidate)
-		time.AfterFunc(105*time.Second, clusterAndPlotResCandidate)
+		time.AfterFunc(65*time.Second, clusterAndPlotReqCandidate)
+		time.AfterFunc(65*time.Second, clusterAndPlotResCandidate)
 
 		// primary
 		clusterAndPlotReqPrimary := func() {
@@ -45,8 +48,8 @@ func main() {
 		clusterAndPlotResPrimary := func() {
 			reqRespPrimary.ClusterAndPlotResponses()
 		}
-		time.AfterFunc(110*time.Second, clusterAndPlotReqPrimary)
-		time.AfterFunc(110*time.Second, clusterAndPlotResPrimary)
+		time.AfterFunc(67*time.Second, clusterAndPlotReqPrimary)
+		time.AfterFunc(67*time.Second, clusterAndPlotResPrimary)
 
 		// secondary
 		clusterAndPlotReqSecondary := func() {
@@ -55,8 +58,8 @@ func main() {
 		clusterAndPlotResSecondary := func() {
 			reqRespSecondary.ClusterAndPlotResponses()
 		}
-		time.AfterFunc(113*time.Second, clusterAndPlotReqSecondary)
-		time.AfterFunc(113*time.Second, clusterAndPlotResSecondary)
+		time.AfterFunc(69*time.Second, clusterAndPlotReqSecondary)
+		time.AfterFunc(69*time.Second, clusterAndPlotResSecondary)
 
 		//TODO:
 		//1. this time.AfterFuncs should all be scheduled to run at the same time
@@ -91,20 +94,22 @@ func main() {
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {
+	start := time.Now()
 	defer frontendConn.Close()
-	err := frontendConn.SetDeadline(time.Now().Add(5 * time.Second))
+	err := frontendConn.SetDeadline(time.Now().Add(netTimeouts))
 	if err != nil {
 		err = errors.Wrap(err, "unable to set frontendConn deadline")
 		log.Fatalf("%+v", err)
 	}
 
-	backendConn, err := net.Dial("tcp", reqResp.Backend.Addr)
+	dialer := net.Dialer{Timeout: netTimeouts, DualStack: true, FallbackDelay: 20 * time.Millisecond}
+	backendConn, err := dialer.Dial("tcp", reqResp.Backend.Addr)
 	if err != nil {
 		err = errors.Wrapf(err, "dial failed for backend %v", reqResp.Backend)
 		log.Fatalf("%+v", err)
 	}
 	defer backendConn.Close()
-	err = backendConn.SetDeadline(time.Now().Add(5 * time.Second))
+	err = backendConn.SetDeadline(time.Now().Add(netTimeouts))
 	if err != nil {
 		err = errors.Wrapf(err, "unable to set backendConn deadline of backend %v", reqResp.Backend)
 		log.Fatalf("%+v", err)
@@ -150,18 +155,20 @@ func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byt
 
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 	log.Printf("we sent request to backend %v \n %v", reqResp.Backend, string(requestBytes))
-	log.Printf("we got response from backend %v \n %v", reqResp.Backend, string(responseBytes))
+	log.Printf("we got response from backend %v in %v secs \n %v", reqResp.Backend, time.Since(start).Seconds(), string(responseBytes))
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 }
 
 func priSecForward(requestBytes []byte, reqResp *sir.RequestsResponse) {
-	backendConn, err := net.Dial("tcp", reqResp.Backend.Addr)
+	start := time.Now()
+	dialer := net.Dialer{Timeout: netTimeouts, DualStack: true, FallbackDelay: 20 * time.Millisecond}
+	backendConn, err := dialer.Dial("tcp", reqResp.Backend.Addr)
 	if err != nil {
 		err = errors.Wrapf(err, "dial failed for backend %v", reqResp.Backend)
 		log.Fatalf("%+v", err)
 	}
 	defer backendConn.Close()
-	err = backendConn.SetDeadline(time.Now().Add(5 * time.Second))
+	err = backendConn.SetDeadline(time.Now().Add(netTimeouts))
 	if err != nil {
 		err = errors.Wrapf(err, "unable to set backendConn deadline of backend %v", reqResp.Backend)
 		log.Fatalf("%+v", err)
@@ -184,6 +191,6 @@ func priSecForward(requestBytes []byte, reqResp *sir.RequestsResponse) {
 
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 	log.Printf("we sent request to backend %v \n %v", reqResp.Backend, string(requestBytes))
-	log.Printf("we got response from backend %v \n %v", reqResp.Backend, string(responseBytes))
+	log.Printf("we got response from backend %v in %v secs \n %v", reqResp.Backend, time.Since(start).Seconds(), string(responseBytes))
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 }
