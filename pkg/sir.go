@@ -127,7 +127,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
-	log.Printf("Responses stimated number of clusters for backend %v: %d\n", reqResp.Backend, nclusters)
+	log.Printf("Responses estimated number of clusters for backend %v: %d\n", reqResp.Backend, nclusters)
 
 	proj := FindPCA(X, reqResp.LengthOfLargestResponse)
 	err = PlotResultsPCA(reqResp.NoOfAllResponses, proj, nclusters, appendName)
