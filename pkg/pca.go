@@ -39,8 +39,7 @@ func PlotResultsPCA(noOfRequests int, X *mat.Dense, nclusters int, appendName st
 	if err != nil {
 		return errors.Wrap(err, "error instantiating plotter.NewScatter")
 	}
-	var color0 color.RGBA
-	color0 = color.RGBA{176, 0, 0, 255}
+	color0 := color.RGBA{176, 0, 0, 255}
 	s.GlyphStyle.Color = color0
 	s.GlyphStyle.Shape = draw.CircleGlyph{}
 	pt.Add(s)
@@ -55,14 +54,13 @@ func PlotResultsPCA(noOfRequests int, X *mat.Dense, nclusters int, appendName st
 }
 
 func FindPCA(X *mat.Dense, d int) *mat.Dense {
-	// Calculate the principal component direction vectors
-	// and variances.
+	// Calculate the principal component direction vectors and variances.
 	var pc stat.PC
 	ok := pc.PrincipalComponents(X, nil)
 	if !ok {
 		log.Fatal(errors.New("unable to get PrincipalComponents"))
 	}
-	log.Println("variances ", pc.VarsTo(nil))
+	// log.Println("variances ", pc.VarsTo(nil))
 
 	k := 2
 	var proj mat.Dense

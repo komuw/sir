@@ -6,7 +6,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/komuw/Sir)](https://goreportcard.com/report/github.com/komuw/sir)          
 
 
-Sir, is a TCP reverse proxy that checks for regressions in your services/apps.               
+Sir, is a TCP proxy that checks for regressions in your services/apps.               
 It's name is derived from the late(and great) Kenyan hip hop artiste, [E-Sir](https://en.wikipedia.org/wiki/E-Sir). 
 
 
@@ -44,6 +44,14 @@ The premise for Sir is that:
 ```      
 
 
+#### debug
+```bash
+go build -o sir cmd/main.go      
+dlv exec ./sir      
+(dlv) help      
+(dlv) break pkg/sir.go:65 or break /Users/komuw/go/pkg/mod/github.com/hashicorp/yamux@v0.0.0-20181012175058-2f1d1f20f75d/session.go:212  
+(dlv) continue
+```
 
 #### prior art
 1. https://github.com/twitter/diffy (https://github.com/opendiffy/diffy)     

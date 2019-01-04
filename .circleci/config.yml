@@ -10,7 +10,7 @@ jobs:
     steps:
         - checkout
         - run:
-            name: install apt and pip deps
+            name: install apt deps
             command: |
                 pwd; ls -lsha
                 apt-get -y update
@@ -18,9 +18,8 @@ jobs:
                             curl \
                             wget \
                             git \
-                            nano \
-                            apt-transport-https \
-                            ca-certificates
+                            build-essential \
+                            nano
 
         - run:
             name: install golang
@@ -52,7 +51,7 @@ jobs:
 
         - run:
             name: go vet
-            command: source /etc/profile && go vet -v -all -shadow ./...
+            command: source /etc/profile && go vet -all -shadow ./...
         - run:
             name: staticcheck
             command: source /etc/profile && staticcheck -tests -show-ignored ./...

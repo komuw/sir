@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/komuw/sir/sir"
+	"github.com/komuw/sir/pkg"
 )
 
 /*
