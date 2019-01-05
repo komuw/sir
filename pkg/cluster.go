@@ -41,7 +41,7 @@ func findClusterMembers(labels []int, X *mat.Dense) error {
 
 }
 
-func GetClusters(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64, Eps float64, MinSamples float64, autoGenerateSampleData bool, appendName string) (int, *mat.Dense, error) {
+func GetClusters(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64, Eps float64, MinSamples float64, autoGenerateSampleData bool) (int, *mat.Dense, error) {
 	// adapted from http://scikit-learn.org/stable/_downloads/plot_dbscan.ipynb
 	if lengthOfLargestRequest <= 1 {
 		err := errors.New("we cant create a matrix with no dimensions, ie X.At(x, y) will fail")

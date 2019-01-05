@@ -91,7 +91,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 			reqResp.AllRequests = append(reqResp.AllRequests, float64(v))
 		}
 	}
-	nclusters, X, err := GetClusters(reqResp.NoOfAllRequests, reqResp.LengthOfLargestRequest, reqResp.AllRequests, 3.0, 1.0, false, appendName)
+	nclusters, X, err := GetClusters(reqResp.NoOfAllRequests, reqResp.LengthOfLargestRequest, reqResp.AllRequests, 3.0, 1.0, false)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
@@ -123,7 +123,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
 			reqResp.AllResponses = append(reqResp.AllResponses, float64(v))
 		}
 	}
-	nclusters, X, err := GetClusters(reqResp.NoOfAllResponses, reqResp.LengthOfLargestResponse, reqResp.AllResponses, 3.0, 1.0, false, appendName)
+	nclusters, X, err := GetClusters(reqResp.NoOfAllResponses, reqResp.LengthOfLargestResponse, reqResp.AllResponses, 3.0, 1.0, false)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
