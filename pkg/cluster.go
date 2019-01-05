@@ -48,7 +48,11 @@ func GetClusters(noOfAllRequests int, lengthOfLargestRequest int, allRequests []
 		return 0, nil, err
 	}
 
-	X := getX(noOfAllRequests, lengthOfLargestRequest, allRequests)
+	X, err := getX(noOfAllRequests, lengthOfLargestRequest, allRequests)
+	if err != nil {
+		return 0, nil, err
+	}
+
 	if autoGenerateSampleData {
 		noOfAllRequests = 750
 		Eps = 1.2 //3.0
@@ -74,8 +78,17 @@ func GetClusters(noOfAllRequests int, lengthOfLargestRequest int, allRequests []
 	return nclusters, X, nil
 }
 
-func getX(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64) *mat.Dense {
-	return mat.NewDense(noOfAllRequests, lengthOfLargestRequest, allRequests)
+func getX(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64) (*mat.Dense, error) {
+	if noOfAllRequests*lengthOfLargestRequest != len(allRequests) {
+		err := errors.Errorf(
+			"matrix dimension mismatch. noOfAllRequests=%v. lengthOfLargestRequest=%v, len(allRequests)=%v",
+			noOfAllRequests,
+			lengthOfLargestRequest,
+			len(allRequests),
+		)
+		return nil, err
+	}
+	return mat.NewDense(noOfAllRequests, lengthOfLargestRequest, allRequests), nil
 }
 
 func generateSampleData(noOfAllRequests int) *mat.Dense {
