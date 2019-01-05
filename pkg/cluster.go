@@ -1,6 +1,8 @@
 package sir
 
 import (
+	"fmt"
+
 	"github.com/pa-m/sklearn/cluster"
 	"github.com/pa-m/sklearn/datasets"
 	"github.com/pa-m/sklearn/preprocessing"
@@ -79,6 +81,7 @@ func GetClusters(noOfAllRequests int, lengthOfLargestRequest int, allRequests []
 }
 
 func getX(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64) (*mat.Dense, error) {
+	fmt.Println("noOfAllRequests, lengthOfLargestRequest, len(allRequests)", noOfAllRequests, lengthOfLargestRequest, len(allRequests))
 	if noOfAllRequests*lengthOfLargestRequest != len(allRequests) {
 		err := errors.Errorf(
 			"matrix dimension mismatch. noOfAllRequests=%v. lengthOfLargestRequest=%v, len(allRequests)=%v",

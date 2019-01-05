@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -10,10 +11,12 @@ import (
 
 	"github.com/komuw/sir/pkg"
 	"github.com/pkg/errors"
+	"github.com/sanity-io/litter"
 )
 
 // TODO: make this configurable
 const netTimeouts = 6 * time.Second
+const thresholdOfClusterCalculation = 10
 
 func main() {
 	/*
@@ -23,48 +26,12 @@ func main() {
 	*/
 	frontendAddr := "localhost:7777"
 	candidateBackendAddr := "localhost:3001" //"httpbin.org:80"
-	primaryBackendAddr := "localhost:3002"   //"google.com:80"
-	secondaryBackendAddr := "localhost:3003" //"bing.com:80"
+	// primaryBackendAddr := "localhost:3002"   //"google.com:80"
+	// secondaryBackendAddr := "localhost:3003" //"bing.com:80"
 
 	reqRespCandidate := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Candidate, Addr: candidateBackendAddr}}
-	reqRespPrimary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Primary, Addr: primaryBackendAddr}}
-	reqRespSecondary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Secondary, Addr: secondaryBackendAddr}}
-
-	{
-		// candidate
-		clusterAndPlotReqCandidate := func() {
-			reqRespCandidate.ClusterAndPlotRequests()
-		}
-		clusterAndPlotResCandidate := func() {
-			reqRespCandidate.ClusterAndPlotResponses()
-		}
-		time.AfterFunc(70*time.Second, clusterAndPlotReqCandidate)
-		time.AfterFunc(70*time.Second, clusterAndPlotResCandidate)
-
-		// primary
-		clusterAndPlotReqPrimary := func() {
-			reqRespPrimary.ClusterAndPlotRequests()
-		}
-		clusterAndPlotResPrimary := func() {
-			reqRespPrimary.ClusterAndPlotResponses()
-		}
-		time.AfterFunc(72*time.Second, clusterAndPlotReqPrimary)
-		time.AfterFunc(72*time.Second, clusterAndPlotResPrimary)
-
-		// secondary
-		clusterAndPlotReqSecondary := func() {
-			reqRespSecondary.ClusterAndPlotRequests()
-		}
-		clusterAndPlotResSecondary := func() {
-			reqRespSecondary.ClusterAndPlotResponses()
-		}
-		time.AfterFunc(73*time.Second, clusterAndPlotReqSecondary)
-		time.AfterFunc(73*time.Second, clusterAndPlotResSecondary)
-
-		//TODO:
-		//1. this time.AfterFuncs should all be scheduled to run at the same time
-		//2. actually, we should not be using time.AfterFunc at all; but some other mechanism
-	}
+	// reqRespPrimary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Primary, Addr: primaryBackendAddr}}
+	// reqRespSecondary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Secondary, Addr: secondaryBackendAddr}}
 
 	listener, err := net.Listen("tcp", frontendAddr)
 	if err != nil {
@@ -86,11 +53,50 @@ func main() {
 		log.Printf("ready to accept connections to frontend %v", frontendAddr)
 		var rb = make(chan []byte)
 		go forward(frontendConn, reqRespCandidate, rb)
-		request := <-rb
-		go priSecForward(request, reqRespPrimary)
-		time.Sleep(3 * time.Second) // TODO: remove this sleeps
-		go priSecForward(request, reqRespSecondary)
+		<-rb
+		// go priSecForward(request, reqRespPrimary)
+		// time.Sleep(3 * time.Second) // TODO: remove this sleeps
+		// go priSecForward(request, reqRespSecondary)
+		// time.Sleep(3 * time.Second) // TODO: remove this sleeps
+
+		go calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
+
+		if reqRespCandidate.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
+			resetReqResp := &sir.RequestsResponse{
+				Backend: sir.Backend{Type: reqRespCandidate.Backend.Type, Addr: reqRespCandidate.Backend.Addr}}
+			reqRespCandidate = resetReqResp
+
+			fmt.Println()
+			fmt.Println()
+			litter.Dump(reqRespCandidate)
+			fmt.Println(reqRespCandidate.NoOfAllRequests % thresholdOfClusterCalculation)
+		}
+
+		// go calculateAha(reqRespPrimary, thresholdOfClusterCalculation)
+		// go calculateAha(reqRespSecondary, thresholdOfClusterCalculation)
 	}
+}
+
+func calculateAha(reqResp *sir.RequestsResponse, threshold int) {
+	reqResp.L.Lock()
+	defer reqResp.L.Unlock()
+	// resetReqResp := &sir.RequestsResponse{
+	// 	Backend: sir.Backend{Type: reqResp.Backend.Type, Addr: reqResp.Backend.Addr}}
+
+	if reqResp.NoOfAllRequests%threshold == 0 {
+		log.Printf("NoOfAllRequests=%v has modulo 0 with threshold=%v for backend %v", reqResp.NoOfAllRequests, threshold, reqResp.Backend)
+		reqResp.ClusterAndPlotRequests()
+		// reqResp.ClusterAndPlotResponses()
+		// we do not need to reset reqResp,
+		//since more requests will just mean more/better data to work with
+
+		// reqResp.L.Lock()
+		// reqResp = resetReqResp
+		// reqResp.L.Unlock()
+	} else {
+		log.Printf("NoOfAllRequests=%v doe not have modulo 0 with threshold=%v for backend %v", reqResp.NoOfAllRequests, threshold, reqResp.Backend)
+	}
+
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {

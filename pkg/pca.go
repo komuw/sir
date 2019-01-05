@@ -16,6 +16,9 @@ import (
 )
 
 func PlotResultsPCA(noOfRequests int, X *mat.Dense, nclusters int, appendName string) error {
+	fmt.Println("called")
+	fmt.Println("called")
+	fmt.Println("called")
 	now := time.Now()
 	// Save the plot to a PNG file.
 	pngfile := appendName + "_" + now.Format("Jan_2_2006_15_04_05") + ".png"
