@@ -17,7 +17,7 @@ func PlotHeatMap(noOfAllRequests int, lengthOfLargestRequest int, X *mat.Dense, 
 
 	now := time.Now()
 	// Save the plot to a PNG file.
-	pngfile := appendName + "_" + "HeatMap_" + now.Format("Jan_2_2006_15_04_05") + ".png"
+	pngfile := appendName + "_" + "HeatMap_" + now.Format("Jan_02_2006_15_04_05") + ".png"
 
 	// noOfAllRequests := 11
 	// lengthOfLargestRequest := 4

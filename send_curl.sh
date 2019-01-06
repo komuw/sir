@@ -26,7 +26,7 @@ do
    localhost:7777/post
 done
 
-for i in {1..7}
+for i in {1..8}
 do
    printf "\n sending request:: \n"
    curl -vL \

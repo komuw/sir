@@ -14,6 +14,7 @@ import (
 
 // TODO: make this configurable
 const netTimeouts = 6 * time.Second
+const thresholdOfClusterCalculation = 20
 
 func main() {
 	/*
@@ -29,42 +30,6 @@ func main() {
 	reqRespCandidate := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Candidate, Addr: candidateBackendAddr}}
 	reqRespPrimary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Primary, Addr: primaryBackendAddr}}
 	reqRespSecondary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Secondary, Addr: secondaryBackendAddr}}
-
-	{
-		// candidate
-		clusterAndPlotReqCandidate := func() {
-			reqRespCandidate.ClusterAndPlotRequests()
-		}
-		clusterAndPlotResCandidate := func() {
-			reqRespCandidate.ClusterAndPlotResponses()
-		}
-		time.AfterFunc(70*time.Second, clusterAndPlotReqCandidate)
-		time.AfterFunc(70*time.Second, clusterAndPlotResCandidate)
-
-		// primary
-		clusterAndPlotReqPrimary := func() {
-			reqRespPrimary.ClusterAndPlotRequests()
-		}
-		clusterAndPlotResPrimary := func() {
-			reqRespPrimary.ClusterAndPlotResponses()
-		}
-		time.AfterFunc(72*time.Second, clusterAndPlotReqPrimary)
-		time.AfterFunc(72*time.Second, clusterAndPlotResPrimary)
-
-		// secondary
-		clusterAndPlotReqSecondary := func() {
-			reqRespSecondary.ClusterAndPlotRequests()
-		}
-		clusterAndPlotResSecondary := func() {
-			reqRespSecondary.ClusterAndPlotResponses()
-		}
-		time.AfterFunc(73*time.Second, clusterAndPlotReqSecondary)
-		time.AfterFunc(73*time.Second, clusterAndPlotResSecondary)
-
-		//TODO:
-		//1. this time.AfterFuncs should all be scheduled to run at the same time
-		//2. actually, we should not be using time.AfterFunc at all; but some other mechanism
-	}
 
 	listener, err := net.Listen("tcp", frontendAddr)
 	if err != nil {
@@ -87,10 +52,43 @@ func main() {
 		var rb = make(chan []byte)
 		go forward(frontendConn, reqRespCandidate, rb)
 		request := <-rb
+
+		priNoOfAllRequests := reqRespPrimary.NoOfAllRequests
 		go priSecForward(request, reqRespPrimary)
 		time.Sleep(3 * time.Second) // TODO: remove this sleeps
+		secNoOfAllRequests := reqRespSecondary.NoOfAllRequests
 		go priSecForward(request, reqRespSecondary)
+		time.Sleep(3 * time.Second) // TODO: remove this sleeps
+
+		// TODO: remove these synchronous calls to calculateAha
+		if reqRespCandidate.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
+			resetReqResp := calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
+			reqRespCandidate = resetReqResp
+		}
+		if priNoOfAllRequests == 0 || secNoOfAllRequests == 0 {
+			priNoOfAllRequests, secNoOfAllRequests = 1, 1
+		}
+		if priNoOfAllRequests%thresholdOfClusterCalculation == 0 {
+			resetReqResp := calculateAha(reqRespPrimary, thresholdOfClusterCalculation)
+			reqRespPrimary = resetReqResp
+		}
+		if secNoOfAllRequests%thresholdOfClusterCalculation == 0 {
+			resetReqResp := calculateAha(reqRespSecondary, thresholdOfClusterCalculation)
+			reqRespSecondary = resetReqResp
+		}
+
 	}
+}
+
+func calculateAha(reqResp *sir.RequestsResponse, threshold int) *sir.RequestsResponse {
+	reqResp.L.Lock()
+	defer reqResp.L.Unlock()
+
+	reqResp.ClusterAndPlotRequests()
+	reqResp.ClusterAndPlotResponses()
+	resetReqResp := &sir.RequestsResponse{
+		Backend: sir.Backend{Type: reqResp.Backend.Type, Addr: reqResp.Backend.Addr}}
+	return resetReqResp
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {
@@ -193,4 +191,5 @@ func priSecForward(requestBytes []byte, reqResp *sir.RequestsResponse) {
 	log.Printf("we sent request to backend %v \n %v", reqResp.Backend, string(requestBytes))
 	log.Printf("we got response from backend %v in %v secs \n %v", reqResp.Backend, time.Since(start).Seconds(), string(responseBytes))
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
+
 }
