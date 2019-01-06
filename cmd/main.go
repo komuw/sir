@@ -24,12 +24,12 @@ func main() {
 	*/
 	frontendAddr := "localhost:7777"
 	candidateBackendAddr := "localhost:3001" //"httpbin.org:80"
-	// primaryBackendAddr := "localhost:3002"   //"google.com:80"
-	// secondaryBackendAddr := "localhost:3003" //"bing.com:80"
+	primaryBackendAddr := "localhost:3002"   //"google.com:80"
+	secondaryBackendAddr := "localhost:3003" //"bing.com:80"
 
 	reqRespCandidate := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Candidate, Addr: candidateBackendAddr}}
-	// reqRespPrimary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Primary, Addr: primaryBackendAddr}}
-	// reqRespSecondary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Secondary, Addr: secondaryBackendAddr}}
+	reqRespPrimary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Primary, Addr: primaryBackendAddr}}
+	reqRespSecondary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Secondary, Addr: secondaryBackendAddr}}
 
 	listener, err := net.Listen("tcp", frontendAddr)
 	if err != nil {
@@ -51,19 +51,31 @@ func main() {
 		log.Printf("ready to accept connections to frontend %v", frontendAddr)
 		var rb = make(chan []byte)
 		go forward(frontendConn, reqRespCandidate, rb)
-		<-rb
-		// go priSecForward(request, reqRespPrimary)
-		// time.Sleep(3 * time.Second) // TODO: remove this sleeps
-		// go priSecForward(request, reqRespSecondary)
-		// time.Sleep(3 * time.Second) // TODO: remove this sleeps
+		request := <-rb
+		done := make(chan struct{}, 2)
+		go priSecForward(request, reqRespPrimary, done)
+		time.Sleep(3 * time.Second) // TODO: remove this sleeps
+		go priSecForward(request, reqRespSecondary, done)
+		time.Sleep(3 * time.Second) // TODO: remove this sleeps
 
+		// TODO: remove these synchronous calls to calculateAha
 		if reqRespCandidate.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
 			resetReqResp := calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
 			reqRespCandidate = resetReqResp
 		}
 
-		// go calculateAha(reqRespPrimary, thresholdOfClusterCalculation)
-		// go calculateAha(reqRespSecondary, thresholdOfClusterCalculation)
+		// TODO: remove the need for this synchronization
+		<-done
+		<-done
+		if reqRespPrimary.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
+			resetReqResp := calculateAha(reqRespPrimary, thresholdOfClusterCalculation)
+			reqRespPrimary = resetReqResp
+		}
+		if reqRespSecondary.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
+			resetReqResp := calculateAha(reqRespSecondary, thresholdOfClusterCalculation)
+			reqRespSecondary = resetReqResp
+		}
+
 	}
 }
 
@@ -144,7 +156,7 @@ func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byt
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 }
 
-func priSecForward(requestBytes []byte, reqResp *sir.RequestsResponse) {
+func priSecForward(requestBytes []byte, reqResp *sir.RequestsResponse, done chan struct{}) {
 	start := time.Now()
 	dialer := net.Dialer{Timeout: netTimeouts, DualStack: true, FallbackDelay: 20 * time.Millisecond}
 	backendConn, err := dialer.Dial("tcp", reqResp.Backend.Addr)
@@ -178,4 +190,6 @@ func priSecForward(requestBytes []byte, reqResp *sir.RequestsResponse) {
 	log.Printf("we sent request to backend %v \n %v", reqResp.Backend, string(requestBytes))
 	log.Printf("we got response from backend %v in %v secs \n %v", reqResp.Backend, time.Since(start).Seconds(), string(responseBytes))
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
+
+	done <- struct{}{}
 }
