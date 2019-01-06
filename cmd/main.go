@@ -52,10 +52,12 @@ func main() {
 		var rb = make(chan []byte)
 		go forward(frontendConn, reqRespCandidate, rb)
 		request := <-rb
-		done := make(chan struct{}, 2)
-		go priSecForward(request, reqRespPrimary, done)
+
+		priNoOfAllRequests := reqRespPrimary.NoOfAllRequests
+		go priSecForward(request, reqRespPrimary)
 		time.Sleep(3 * time.Second) // TODO: remove this sleeps
-		go priSecForward(request, reqRespSecondary, done)
+		secNoOfAllRequests := reqRespSecondary.NoOfAllRequests
+		go priSecForward(request, reqRespSecondary)
 		time.Sleep(3 * time.Second) // TODO: remove this sleeps
 
 		// TODO: remove these synchronous calls to calculateAha
@@ -63,15 +65,14 @@ func main() {
 			resetReqResp := calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
 			reqRespCandidate = resetReqResp
 		}
-
-		// TODO: remove the need for this synchronization
-		<-done
-		<-done
-		if reqRespPrimary.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
+		if priNoOfAllRequests == 0 || secNoOfAllRequests == 0 {
+			priNoOfAllRequests, secNoOfAllRequests = 1, 1
+		}
+		if priNoOfAllRequests%thresholdOfClusterCalculation == 0 {
 			resetReqResp := calculateAha(reqRespPrimary, thresholdOfClusterCalculation)
 			reqRespPrimary = resetReqResp
 		}
-		if reqRespSecondary.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
+		if secNoOfAllRequests%thresholdOfClusterCalculation == 0 {
 			resetReqResp := calculateAha(reqRespSecondary, thresholdOfClusterCalculation)
 			reqRespSecondary = resetReqResp
 		}
@@ -82,9 +83,9 @@ func main() {
 func calculateAha(reqResp *sir.RequestsResponse, threshold int) *sir.RequestsResponse {
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
+
 	reqResp.ClusterAndPlotRequests()
 	reqResp.ClusterAndPlotResponses()
-
 	resetReqResp := &sir.RequestsResponse{
 		Backend: sir.Backend{Type: reqResp.Backend.Type, Addr: reqResp.Backend.Addr}}
 	return resetReqResp
@@ -156,7 +157,7 @@ func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byt
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 }
 
-func priSecForward(requestBytes []byte, reqResp *sir.RequestsResponse, done chan struct{}) {
+func priSecForward(requestBytes []byte, reqResp *sir.RequestsResponse) {
 	start := time.Now()
 	dialer := net.Dialer{Timeout: netTimeouts, DualStack: true, FallbackDelay: 20 * time.Millisecond}
 	backendConn, err := dialer.Dial("tcp", reqResp.Backend.Addr)
@@ -191,5 +192,4 @@ func priSecForward(requestBytes []byte, reqResp *sir.RequestsResponse, done chan
 	log.Printf("we got response from backend %v in %v secs \n %v", reqResp.Backend, time.Since(start).Seconds(), string(responseBytes))
 	//////////////////////////////////// LOG REQUEST  & RESPONSE ////////////////////////
 
-	done <- struct{}{}
 }
