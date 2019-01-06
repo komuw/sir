@@ -24,12 +24,12 @@ func main() {
 	*/
 	frontendAddr := "localhost:7777"
 	candidateBackendAddr := "localhost:3001" //"httpbin.org:80"
-	primaryBackendAddr := "localhost:3002"   //"google.com:80"
-	secondaryBackendAddr := "localhost:3003" //"bing.com:80"
+	// primaryBackendAddr := "localhost:3002"   //"google.com:80"
+	// secondaryBackendAddr := "localhost:3003" //"bing.com:80"
 
 	reqRespCandidate := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Candidate, Addr: candidateBackendAddr}}
-	reqRespPrimary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Primary, Addr: primaryBackendAddr}}
-	reqRespSecondary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Secondary, Addr: secondaryBackendAddr}}
+	// reqRespPrimary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Primary, Addr: primaryBackendAddr}}
+	// reqRespSecondary := &sir.RequestsResponse{Backend: sir.Backend{Type: sir.Secondary, Addr: secondaryBackendAddr}}
 
 	listener, err := net.Listen("tcp", frontendAddr)
 	if err != nil {
@@ -49,46 +49,33 @@ func main() {
 			log.Fatalf("%+v", err)
 		}
 		log.Printf("ready to accept connections to frontend %v", frontendAddr)
+		if reqRespCandidate.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
+			resetReqResp := &sir.RequestsResponse{
+				Backend: sir.Backend{Type: reqRespCandidate.Backend.Type, Addr: reqRespCandidate.Backend.Addr}}
+			reqRespCandidate = resetReqResp
+		}
+
 		var rb = make(chan []byte)
 		go forward(frontendConn, reqRespCandidate, rb)
-		request := <-rb
-
-		priNoOfAllRequests := reqRespPrimary.NoOfAllRequests
-		go priSecForward(request, reqRespPrimary)
-		time.Sleep(3 * time.Second) // TODO: remove this sleeps
-		secNoOfAllRequests := reqRespSecondary.NoOfAllRequests
-		go priSecForward(request, reqRespSecondary)
-		time.Sleep(3 * time.Second) // TODO: remove this sleeps
+		<-rb
 
 		// TODO: remove these synchronous calls to calculateAha
 		if reqRespCandidate.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
-			resetReqResp := calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
-			reqRespCandidate = resetReqResp
-		}
-		if priNoOfAllRequests == 0 || secNoOfAllRequests == 0 {
-			priNoOfAllRequests, secNoOfAllRequests = 1, 1
-		}
-		if priNoOfAllRequests%thresholdOfClusterCalculation == 0 {
-			resetReqResp := calculateAha(reqRespPrimary, thresholdOfClusterCalculation)
-			reqRespPrimary = resetReqResp
-		}
-		if secNoOfAllRequests%thresholdOfClusterCalculation == 0 {
-			resetReqResp := calculateAha(reqRespSecondary, thresholdOfClusterCalculation)
-			reqRespSecondary = resetReqResp
+			go calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
 		}
 
 	}
 }
 
-func calculateAha(reqResp *sir.RequestsResponse, threshold int) *sir.RequestsResponse {
+func calculateAha(reqResp *sir.RequestsResponse, threshold int) {
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
 
 	reqResp.ClusterAndPlotRequests()
 	reqResp.ClusterAndPlotResponses()
-	resetReqResp := &sir.RequestsResponse{
-		Backend: sir.Backend{Type: reqResp.Backend.Type, Addr: reqResp.Backend.Addr}}
-	return resetReqResp
+	// resetReqResp := &sir.RequestsResponse{
+	// 	Backend: sir.Backend{Type: reqResp.Backend.Type, Addr: reqResp.Backend.Addr}}
+	// return resetReqResp
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {
