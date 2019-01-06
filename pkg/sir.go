@@ -74,9 +74,6 @@ func (reqResp *RequestsResponse) HandleResponse(responseBuf []byte) {
 // TODO: this should return error
 func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 	appendName := "Requests:" + fmt.Sprint(reqResp.Backend)
-	// reqResp.L.Lock()
-	// defer reqResp.L.Unlock()
-
 	for k, v := range reqResp.RequestsSlice {
 		diff := reqResp.LengthOfLargestRequest - len(v)
 		if diff != 0 {
@@ -106,12 +103,9 @@ func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 	}
 }
 
+// TODO: this should return error
 func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
 	appendName := "Responses:" + fmt.Sprint(reqResp.Backend)
-	reqResp.L.Lock()
-	defer reqResp.L.Unlock()
-
-	log.Printf("lengthOfLargestResponse for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestResponse)
 	for k, v := range reqResp.ResponsesSlice {
 		diff := reqResp.LengthOfLargestResponse - len(v)
 		if diff != 0 {
@@ -125,6 +119,7 @@ func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
 			reqResp.AllResponses = append(reqResp.AllResponses, float64(v))
 		}
 	}
+	log.Printf("lengthOfLargestResponse for backend %v %v", reqResp.Backend, reqResp.LengthOfLargestResponse)
 	nclusters, X, err := GetClusters(reqResp.NoOfAllResponses, reqResp.LengthOfLargestResponse, reqResp.AllResponses, 3.0, 1.0, false)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
