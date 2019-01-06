@@ -16,7 +16,7 @@ import (
 
 // TODO: make this configurable
 const netTimeouts = 6 * time.Second
-const thresholdOfClusterCalculation = 10
+const thresholdOfClusterCalculation = 20
 
 func main() {
 	/*
@@ -59,12 +59,8 @@ func main() {
 		// go priSecForward(request, reqRespSecondary)
 		// time.Sleep(3 * time.Second) // TODO: remove this sleeps
 
-		go calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
-
 		if reqRespCandidate.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
-			resetReqResp := &sir.RequestsResponse{
-				Backend: sir.Backend{Type: reqRespCandidate.Backend.Type, Addr: reqRespCandidate.Backend.Addr}}
-			reqRespCandidate = resetReqResp
+			go calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
 
 			fmt.Println()
 			fmt.Println()
@@ -80,23 +76,11 @@ func main() {
 func calculateAha(reqResp *sir.RequestsResponse, threshold int) {
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
-	// resetReqResp := &sir.RequestsResponse{
-	// 	Backend: sir.Backend{Type: reqResp.Backend.Type, Addr: reqResp.Backend.Addr}}
+	reqResp.ClusterAndPlotRequests()
 
-	if reqResp.NoOfAllRequests%threshold == 0 {
-		log.Printf("NoOfAllRequests=%v has modulo 0 with threshold=%v for backend %v", reqResp.NoOfAllRequests, threshold, reqResp.Backend)
-		reqResp.ClusterAndPlotRequests()
-		// reqResp.ClusterAndPlotResponses()
-		// we do not need to reset reqResp,
-		//since more requests will just mean more/better data to work with
-
-		// reqResp.L.Lock()
-		// reqResp = resetReqResp
-		// reqResp.L.Unlock()
-	} else {
-		log.Printf("NoOfAllRequests=%v doe not have modulo 0 with threshold=%v for backend %v", reqResp.NoOfAllRequests, threshold, reqResp.Backend)
-	}
-
+	resetReqResp := &sir.RequestsResponse{
+		Backend: sir.Backend{Type: reqResp.Backend.Type, Addr: reqResp.Backend.Addr}}
+	reqResp = resetReqResp
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {
