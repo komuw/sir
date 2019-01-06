@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/komuw/sir/pkg"
 	"github.com/pkg/errors"
-	"github.com/sanity-io/litter"
 )
 
 // TODO: make this configurable
@@ -60,12 +58,8 @@ func main() {
 		// time.Sleep(3 * time.Second) // TODO: remove this sleeps
 
 		if reqRespCandidate.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
-			go calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
-
-			fmt.Println()
-			fmt.Println()
-			litter.Dump(reqRespCandidate)
-			fmt.Println(reqRespCandidate.NoOfAllRequests % thresholdOfClusterCalculation)
+			resetReqResp := calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
+			reqRespCandidate = resetReqResp
 		}
 
 		// go calculateAha(reqRespPrimary, thresholdOfClusterCalculation)
@@ -73,14 +67,15 @@ func main() {
 	}
 }
 
-func calculateAha(reqResp *sir.RequestsResponse, threshold int) {
+func calculateAha(reqResp *sir.RequestsResponse, threshold int) *sir.RequestsResponse {
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
 	reqResp.ClusterAndPlotRequests()
+	reqResp.ClusterAndPlotResponses()
 
 	resetReqResp := &sir.RequestsResponse{
 		Backend: sir.Backend{Type: reqResp.Backend.Type, Addr: reqResp.Backend.Addr}}
-	reqResp = resetReqResp
+	return resetReqResp
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {
