@@ -45,11 +45,13 @@ func PlotResultsPCA(noOfRequests int, X *mat.Dense, nclusters int, appendName st
 	pt.Add(s)
 	// p.Legend.Add(log.Sprintf("scatter %d", cl), s)
 
+	log.Println("start save png")
 	// TODO: save is hanging. fix it
 	err = pt.Save(6*vg.Inch, 4*vg.Inch, pngfile)
 	if err != nil {
 		return errors.Wrap(err, "error saving png")
 	}
+	log.Println("end save png")
 
 	return nil
 }
