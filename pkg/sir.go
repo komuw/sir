@@ -74,12 +74,17 @@ func (reqResp *RequestsResponse) HandleResponse(responseBuf []byte) {
 // TODO: this should return error
 func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 	appendName := "Requests:" + fmt.Sprint(reqResp.Backend)
+
 	for k, v := range reqResp.RequestsSlice {
-		diff := reqResp.LengthOfLargestRequest - len(v)
+		// eliminate race condition of runtime.slicecopy
+		bufCopy := make([]byte, len(v))
+		copy(bufCopy, v)
+
+		diff := reqResp.LengthOfLargestRequest - len(bufCopy)
 		if diff != 0 {
 			pad := bytes.Repeat([]byte(NulByte), diff)
-			v = append(v, pad...)
-			reqResp.RequestsSlice[k] = v
+			bufCopy = append(bufCopy, pad...)
+			reqResp.RequestsSlice[k] = bufCopy
 		}
 	}
 	for _, eachRequest := range reqResp.RequestsSlice {
@@ -107,11 +112,15 @@ func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
 	appendName := "Responses:" + fmt.Sprint(reqResp.Backend)
 	for k, v := range reqResp.ResponsesSlice {
-		diff := reqResp.LengthOfLargestResponse - len(v)
+		// eliminate race condition of runtime.slicecopy
+		bufCopy := make([]byte, len(v))
+		copy(bufCopy, v)
+
+		diff := reqResp.LengthOfLargestResponse - len(bufCopy)
 		if diff != 0 {
 			pad := bytes.Repeat([]byte(NulByte), diff)
-			v = append(v, pad...)
-			reqResp.ResponsesSlice[k] = v
+			bufCopy = append(bufCopy, pad...)
+			reqResp.ResponsesSlice[k] = bufCopy
 		}
 	}
 	for _, eachResponse := range reqResp.ResponsesSlice {
