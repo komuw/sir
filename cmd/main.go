@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -50,72 +49,46 @@ func main() {
 			log.Fatalf("%+v", err)
 		}
 		log.Printf("ready to accept connections to frontend %v", frontendAddr)
-		xxxx := reqRespCandidate.NoOfAllRequests + 1
-		yyyy := xxxx % thresholdOfClusterCalculation
-		// if xxxx==0{
 
-		// }
-		if yyyy == 0 {
-			fmt.Println("reqRespCandidate.NoOfAllRequests,thresholdOfClusterCalculation", reqRespCandidate.NoOfAllRequests, thresholdOfClusterCalculation)
-			go calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
+		if calculateThreshold(reqRespCandidate.NoOfAllRequests, thresholdOfClusterCalculation) {
+			go clusterPlot(reqRespCandidate, thresholdOfClusterCalculation)
+			go clusterPlot(reqRespPrimary, thresholdOfClusterCalculation)
+			go clusterPlot(reqRespSecondary, thresholdOfClusterCalculation)
 
-			resetReqResp := &sir.RequestsResponse{
+			resetC := &sir.RequestsResponse{
 				Backend: sir.Backend{Type: reqRespCandidate.Backend.Type, Addr: reqRespCandidate.Backend.Addr}}
-			reqRespCandidate = resetReqResp
-		}
-		if yyyy == 0 {
-			go calculateAha(reqRespPrimary, thresholdOfClusterCalculation)
+			reqRespCandidate = resetC
 
-			resetReqResp := &sir.RequestsResponse{
+			resetP := &sir.RequestsResponse{
 				Backend: sir.Backend{Type: reqRespPrimary.Backend.Type, Addr: reqRespPrimary.Backend.Addr}}
-			reqRespPrimary = resetReqResp
-		}
-		if yyyy == 0 {
-			go calculateAha(reqRespSecondary, thresholdOfClusterCalculation)
+			reqRespPrimary = resetP
 
-			resetReqResp := &sir.RequestsResponse{
+			resetS := &sir.RequestsResponse{
 				Backend: sir.Backend{Type: reqRespSecondary.Backend.Type, Addr: reqRespSecondary.Backend.Addr}}
-			reqRespSecondary = resetReqResp
+			reqRespSecondary = resetS
 		}
 
 		var rb = make(chan []byte)
 		go forward(frontendConn, reqRespCandidate, rb)
 		request := <-rb
-
-		// priNoOfAllRequests := reqRespPrimary.NoOfAllRequests
 		go priSecForward(request, reqRespPrimary)
-		// time.Sleep(3 * time.Second) // TODO: remove this sleeps
-		// secNoOfAllRequests := reqRespSecondary.NoOfAllRequests
 		go priSecForward(request, reqRespSecondary)
-		// time.Sleep(3 * time.Second) // TODO: remove this sleeps
-
-		// TODO: remove these synchronous calls to calculateAha
-		// if reqRespCandidate.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
-		// 	go calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
-
-		// }
-		// // if priNoOfAllRequests == 0 || secNoOfAllRequests == 0 {
-		// // 	priNoOfAllRequests, secNoOfAllRequests = 1, 1
-		// // }
-		// if reqRespPrimary.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
-		// 	go calculateAha(reqRespPrimary, thresholdOfClusterCalculation)
-		// }
-		// if reqRespSecondary.NoOfAllRequests%thresholdOfClusterCalculation == 0 {
-		// 	go calculateAha(reqRespSecondary, thresholdOfClusterCalculation)
-		// }
-
 	}
 }
 
-func calculateAha(reqResp *sir.RequestsResponse, threshold int) {
+func calculateThreshold(noOfRequests, threshold int) bool {
+	if noOfRequests == 0 {
+		noOfRequests = 1
+	}
+	return (noOfRequests % threshold) == 0
+}
+
+func clusterPlot(reqResp *sir.RequestsResponse, threshold int) {
 	reqResp.L.Lock()
 	defer reqResp.L.Unlock()
 
 	reqResp.ClusterAndPlotRequests()
 	reqResp.ClusterAndPlotResponses()
-	// resetReqResp := &sir.RequestsResponse{
-	// 	Backend: sir.Backend{Type: reqResp.Backend.Type, Addr: reqResp.Backend.Addr}}
-	// return resetReqResp
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {
