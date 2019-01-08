@@ -76,11 +76,9 @@ func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 	appendName := "Requests:" + fmt.Sprint(reqResp.Backend)
 
 	for k, v := range reqResp.RequestsSlice {
-		//////////////////
 		// eliminate race condition of runtime.slicecopy
 		bufCopy := make([]byte, len(v))
 		copy(bufCopy, v)
-		//////////////////
 
 		diff := reqResp.LengthOfLargestRequest - len(bufCopy)
 		if diff != 0 {
@@ -114,10 +112,9 @@ func (reqResp *RequestsResponse) ClusterAndPlotRequests() {
 func (reqResp *RequestsResponse) ClusterAndPlotResponses() {
 	appendName := "Responses:" + fmt.Sprint(reqResp.Backend)
 	for k, v := range reqResp.ResponsesSlice {
-		//////////////////
+		// eliminate race condition of runtime.slicecopy
 		bufCopy := make([]byte, len(v))
 		copy(bufCopy, v)
-		//////////////////
 
 		diff := reqResp.LengthOfLargestResponse - len(bufCopy)
 		if diff != 0 {
