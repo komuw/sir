@@ -18,7 +18,7 @@ import (
 func PlotResultsPCA(noOfRequests int, X *mat.Dense, nclusters int, appendName string) error {
 	now := time.Now()
 	// Save the plot to a PNG file.
-	pngfile := appendName + "_" + now.Format("Jan_2_2006_15_04_05") + ".png"
+	pngfile := appendName + "_" + now.Format("Jan_02_2006_15_04_05") + ".png"
 
 	// plot result
 	pt, err := plot.New()
@@ -45,10 +45,13 @@ func PlotResultsPCA(noOfRequests int, X *mat.Dense, nclusters int, appendName st
 	pt.Add(s)
 	// p.Legend.Add(log.Sprintf("scatter %d", cl), s)
 
+	log.Println("start save png")
+	// TODO: save is hanging. fix it
 	err = pt.Save(6*vg.Inch, 4*vg.Inch, pngfile)
 	if err != nil {
 		return errors.Wrap(err, "error saving png")
 	}
+	log.Println("end save png")
 
 	return nil
 }

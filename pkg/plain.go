@@ -18,7 +18,7 @@ import (
 func PlotPlainScatter(labelsmap map[int]int, noOfAllRequests int, labels []int, nclusters int, X *mat.Dense, appendName string) error {
 	now := time.Now()
 	// Save the plot to a PNG file.
-	pngfile := appendName + "_" + now.Format("Jan_2_2006_15_04_05") + ".png"
+	pngfile := appendName + "_" + now.Format("Jan_02_2006_15_04_05") + ".png"
 
 	// plot result
 	pt, err := plot.New()

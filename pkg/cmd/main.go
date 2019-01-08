@@ -41,8 +41,7 @@ func main() {
 		},
 		0.1,
 		2.0,
-		false,
-		"testsirRun")
+		false)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
