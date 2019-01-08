@@ -58,24 +58,24 @@ func main() {
 		if yyyy == 0 {
 			fmt.Println("reqRespCandidate.NoOfAllRequests,thresholdOfClusterCalculation", reqRespCandidate.NoOfAllRequests, thresholdOfClusterCalculation)
 			go calculateAha(reqRespCandidate, thresholdOfClusterCalculation)
+
 			resetReqResp := &sir.RequestsResponse{
 				Backend: sir.Backend{Type: reqRespCandidate.Backend.Type, Addr: reqRespCandidate.Backend.Addr}}
 			reqRespCandidate = resetReqResp
-
 		}
 		if yyyy == 0 {
 			go calculateAha(reqRespPrimary, thresholdOfClusterCalculation)
+
 			resetReqResp := &sir.RequestsResponse{
 				Backend: sir.Backend{Type: reqRespPrimary.Backend.Type, Addr: reqRespPrimary.Backend.Addr}}
 			reqRespPrimary = resetReqResp
-
 		}
 		if yyyy == 0 {
 			go calculateAha(reqRespSecondary, thresholdOfClusterCalculation)
+
 			resetReqResp := &sir.RequestsResponse{
 				Backend: sir.Backend{Type: reqRespSecondary.Backend.Type, Addr: reqRespSecondary.Backend.Addr}}
 			reqRespSecondary = resetReqResp
-
 		}
 
 		var rb = make(chan []byte)
