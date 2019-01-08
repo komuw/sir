@@ -8,38 +8,38 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-func findClusterMembers(labels []int, X *mat.Dense) error {
-	/*
-		for
-			  X := mat.NewDense(noOfAllRequests, 2, []float64{1, 2, 33, 3, 644, 7, 5555, 5})
-			  X.At(i, j) // At returns the element at row i, column j.
-			  X.At(0, 0) == 1
-			  X.At(0, 1) == 2
-			  X.At(0, 2) == Does NOT exist
-			  X.At(1, 0) == 33
-			  X.At(3, 1) == 5
-			  X.At(3, 2) == Does not exist
-			  X.At(4, 0) == Does not exist
-	*/
+// func findClusterMembers(labels []int, X *mat.Dense) error {
+// 	/*
+// 		for
+// 			  X := mat.NewDense(noOfAllRequests, 2, []float64{1, 2, 33, 3, 644, 7, 5555, 5})
+// 			  X.At(i, j) // At returns the element at row i, column j.
+// 			  X.At(0, 0) == 1
+// 			  X.At(0, 1) == 2
+// 			  X.At(0, 2) == Does NOT exist
+// 			  X.At(1, 0) == 33
+// 			  X.At(3, 1) == 5
+// 			  X.At(3, 2) == Does not exist
+// 			  X.At(4, 0) == Does not exist
+// 	*/
 
-	// cluster_members :=  map[string][]int
+// 	// cluster_members :=  map[string][]int
 
-	rows, columns := X.Caps()
-	_, _ = rows, columns
-	for k := range labels {
-		for i := 0; i < columns; i++ {
-			zAt := X.At(k, i)
-			_ = zAt
-			// log.Println("zAt", zAt)
-		}
+// 	rows, columns := X.Caps()
+// 	_, _ = rows, columns
+// 	for k := range labels {
+// 		for i := 0; i < columns; i++ {
+// 			zAt := X.At(k, i)
+// 			_ = zAt
+// 			// log.Println("zAt", zAt)
+// 		}
 
-	}
+// 	}
 
-	// TODO: after establishing the members of the clusters, that's where we ought to call
-	// PlotHeatMap
-	return nil
+// 	// TODO: after establishing the members of the clusters, that's where we ought to call
+// 	// PlotHeatMap
+// 	return nil
 
-}
+// }
 
 func GetClusters(noOfAllRequests int, lengthOfLargestRequest int, allRequests []float64, Eps float64, MinSamples float64, autoGenerateSampleData bool) (int, *mat.Dense, error) {
 	// adapted from http://scikit-learn.org/stable/_downloads/plot_dbscan.ipynb
