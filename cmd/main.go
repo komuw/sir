@@ -14,7 +14,7 @@ import (
 
 // TODO: make this configurable
 const netTimeouts = 6 * time.Second
-const thresholdOfClusterCalculation = 20
+const thresholdOfClusterCalculation = 80
 
 func main() {
 	/*
