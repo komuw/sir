@@ -14,7 +14,7 @@ import (
 
 // TODO: make this configurable
 const netTimeouts = 6 * time.Second
-const thresholdOfClusterCalculation = 100
+const thresholdOfClusterCalculation = 20
 
 func main() {
 	/*
@@ -84,11 +84,6 @@ func calculateThreshold(noOfRequests, threshold int) bool {
 }
 
 func clusterPlot(major *sir.RequestsResponse, minor *sir.RequestsResponse) {
-	major.L.Lock()
-	defer major.L.Unlock()
-	minor.L.Lock()
-	defer minor.L.Unlock()
-
 	sir.ClusterAndPlotRequests(major, minor)
 	// reqResp.ClusterAndPlotRequests()
 	// reqResp.ClusterAndPlotResponses()
