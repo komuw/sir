@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 )
 
 const NulByte = "\x00"
@@ -73,6 +74,8 @@ func (reqResp *RequestsResponse) HandleResponse(responseBuf []byte) {
 
 // TODO: this should return error
 func ClusterAndPlotRequests(major *RequestsResponse, minor *RequestsResponse) {
+	start := time.Now()
+
 	backend := fmt.Sprintf("%v:and:%v", major.Backend, minor.Backend)
 	appendName := "Requests:" + backend
 
@@ -84,6 +87,12 @@ func ClusterAndPlotRequests(major *RequestsResponse, minor *RequestsResponse) {
 	}
 	ReqSlice := append(major.RequestsSlice, minor.RequestsSlice...)
 
+	log.Println()
+	log.Println()
+	log.Printf("append took %v seconds", time.Since(start).Seconds())
+	log.Println()
+
+	start = time.Now()
 	for k, v := range ReqSlice {
 		// eliminate race condition of runtime.slicecopy
 		// bufCopy := make([]byte, len(v))
@@ -101,6 +110,10 @@ func ClusterAndPlotRequests(major *RequestsResponse, minor *RequestsResponse) {
 			Allreqs = append(Allreqs, float64(v))
 		}
 	}
+	log.Println()
+	log.Println()
+	log.Printf("for loop took %v seconds", time.Since(start).Seconds())
+	log.Println()
 
 	log.Printf("lengthOfLargestRequest for backend %v %v", backend, LenLargestReq)
 	log.Printf("noOfAllRequests for backend %v %v ", backend, NoallReqs)
