@@ -52,8 +52,7 @@ func main() {
 
 		if calculateThreshold(reqRespCandidate.NoOfAllRequests, thresholdOfClusterCalculation) {
 			go clusterPlot(reqRespPrimary, reqRespCandidate)
-			// go clusterPlot(reqRespPrimary, thresholdOfClusterCalculation)
-			// go clusterPlot(reqRespSecondary, thresholdOfClusterCalculation)
+			go clusterPlot(reqRespPrimary, reqRespSecondary)
 
 			resetC := &sir.RequestsResponse{
 				Backend: sir.Backend{Type: reqRespCandidate.Backend.Type, Addr: reqRespCandidate.Backend.Addr}}
@@ -85,8 +84,6 @@ func calculateThreshold(noOfRequests, threshold int) bool {
 
 func clusterPlot(major *sir.RequestsResponse, minor *sir.RequestsResponse) {
 	sir.ClusterAndPlotRequests(major, minor)
-	// reqResp.ClusterAndPlotRequests()
-	// reqResp.ClusterAndPlotResponses()
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {
