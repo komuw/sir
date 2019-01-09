@@ -8,7 +8,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/komuw/sir/pkg"
 	"github.com/pkg/errors"
 )
 
@@ -51,9 +50,9 @@ func main() {
 		log.Printf("ready to accept connections to frontend %v", frontendAddr)
 
 		if calculateThreshold(reqRespCandidate.NoOfAllRequests, thresholdOfClusterCalculation) {
-			go clusterPlot(reqRespCandidate, thresholdOfClusterCalculation)
-			go clusterPlot(reqRespPrimary, thresholdOfClusterCalculation)
-			go clusterPlot(reqRespSecondary, thresholdOfClusterCalculation)
+			go clusterPlot(reqRespPrimary, reqRespCandidate)
+			// go clusterPlot(reqRespPrimary, thresholdOfClusterCalculation)
+			// go clusterPlot(reqRespSecondary, thresholdOfClusterCalculation)
 
 			resetC := &sir.RequestsResponse{
 				Backend: sir.Backend{Type: reqRespCandidate.Backend.Type, Addr: reqRespCandidate.Backend.Addr}}
@@ -83,12 +82,15 @@ func calculateThreshold(noOfRequests, threshold int) bool {
 	return (noOfRequests % threshold) == 0
 }
 
-func clusterPlot(reqResp *sir.RequestsResponse, threshold int) {
-	reqResp.L.Lock()
-	defer reqResp.L.Unlock()
+func clusterPlot(major *sir.RequestsResponse, minor *sir.RequestsResponse) {
+	major.L.Lock()
+	defer major.L.Unlock()
+	minor.L.Lock()
+	defer minor.L.Unlock()
 
-	reqResp.ClusterAndPlotRequests()
-	reqResp.ClusterAndPlotResponses()
+	sir.ClusterAndPlotRequests(major, minor)
+	// reqResp.ClusterAndPlotRequests()
+	// reqResp.ClusterAndPlotResponses()
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {
