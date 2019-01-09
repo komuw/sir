@@ -83,6 +83,8 @@ func calculateThreshold(noOfRequests, threshold int) bool {
 }
 
 func clusterPlot(major *sir.RequestsResponse, minor *sir.RequestsResponse) {
+	major.L.Lock()
+	defer major.L.Unlock()
 	sir.ClusterAndPlotRequests(major, minor)
 }
 
