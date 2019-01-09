@@ -8,6 +8,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/komuw/sir/pkg"
 	"github.com/pkg/errors"
 )
 
