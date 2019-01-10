@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"time"
+	"fmt"
 
 	"github.com/komuw/sir/pkg"
 	"github.com/pkg/errors"
@@ -14,7 +15,8 @@ import (
 
 // TODO: make this configurable
 const netTimeouts = 6 * time.Second
-const thresholdOfClusterCalculation = 50
+const thresholdOfClusterCalculation = 10
+
 
 func main() {
 	/*
@@ -84,8 +86,47 @@ func calculateThreshold(noOfRequests, threshold int) bool {
 
 func clusterPlot(major *sir.RequestsResponse, minor *sir.RequestsResponse) {
 	major.L.Lock()
-	defer major.L.Unlock()
-	sir.ClusterAndPlotRequests(major, minor)
+	/////////////
+	// backend := fmt.Sprintf("%v:and:%v", major.Backend, minor.Backend)
+	NoallReqs := major.NoOfAllRequests + minor.NoOfAllRequests
+	LenLargestReq := major.LengthOfLargestRequest
+	if major.LengthOfLargestRequest < minor.LengthOfLargestRequest {
+		LenLargestReq = minor.LengthOfLargestRequest
+	}
+	var ReqSlice [][]byte
+	ReqSlice = append(major.RequestsSlice, minor.RequestsSlice...)
+
+	for k, v := range ReqSlice {
+		// eliminate race condition of runtime.slicecopy
+		// bufCopy := make([]byte, len(v))
+		// copy(bufCopy, v)
+		diff := LenLargestReq - len(v)
+		if diff != 0 {
+			pad := bytes.Repeat([]byte(sir.NulByte), diff)
+			v = append(v, pad...)
+			ReqSlice[k] = v
+		}
+	}
+	major.L.Unlock()
+	fmt.Println("len(major.RequestsSlice), len(minor.RequestsSlice), len(ReqSlice)", len(major.RequestsSlice), len(minor.RequestsSlice), len(ReqSlice))
+
+
+	var Allreqs []float64
+	for _, eachRequest := range ReqSlice {
+		for _, v := range eachRequest {
+			Allreqs = append(Allreqs, float64(v))
+		}
+	}
+
+	fmt.Println("NoallReqs, LenLargestReq, len(Allreqs)", NoallReqs, LenLargestReq, len(Allreqs))
+	// nclusters, X, err := sir.GetClusters(NoallReqs, LenLargestReq, Allreqs, 3.0, 1.0, false)
+	// if err != nil {
+	// 	log.Fatalf("\n%+v", err)
+	// }
+	// log.Printf("Requests estimated number of clusters for backend %v: %d \n", backend, nclusters)
+	// ////////////////
+	
+	// sir.ClusterAndPlotRequests(major, minor,backend ,ReqSlice,LenLargestReq , Allreqs ,NoallReqs , nclusters ,X  )
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {
