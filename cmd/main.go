@@ -113,13 +113,14 @@ func clusterPlot(major *sir.RequestsResponse, minor *sir.RequestsResponse) {
 	}
 	major.L.Unlock()
 
-	nclusters, X, err := sir.GetClusters(NoallReqs, LenLargestReq, Allreqs, 3.0, 1.0, false)
+	NoReqclusters, X, err := sir.GetClusters(NoallReqs, LenLargestReq, Allreqs, 3.0, 1.0, false)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
-	log.Printf("\n\t Requests estimated number of clusters for backend %v: %d \n", backend, nclusters)
+	log.Printf("\n\t Requests estimated number of clusters for backend %v: %d \n", backend, NoReqclusters)
 
-	sir.PlotRequests(major, minor, backend, ReqSlice, LenLargestReq, Allreqs, NoallReqs, nclusters, X)
+	// TODO: plot clusters
+	// sir.PlotRequests(major, minor, backend, ReqSlice, LenLargestReq, Allreqs, NoallReqs, NoReqclusters, X)
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {
