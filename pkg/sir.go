@@ -6,7 +6,6 @@ import (
 	"gonum.org/v1/gonum/mat"
 	"log"
 	"sync"
-	"time"
 )
 
 const NulByte = "\x00"

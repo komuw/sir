@@ -119,6 +119,7 @@ func clusterPlot(major *sir.RequestsResponse, minor *sir.RequestsResponse) {
 	}
 	log.Printf("\n\t Requests estimated number of clusters for backend %v: %d \n", backend, NoReqclusters)
 
+	_ = X
 	// TODO: plot clusters
 	// sir.PlotRequests(major, minor, backend, ReqSlice, LenLargestReq, Allreqs, NoallReqs, NoReqclusters, X)
 }
