@@ -14,7 +14,7 @@ import (
 
 // TODO: make this configurable
 const netTimeouts = 6 * time.Second
-const thresholdOfClusterCalculation = 100
+const thresholdOfClusterCalculation = 50
 
 func main() {
 	/*
@@ -51,9 +51,8 @@ func main() {
 		log.Printf("ready to accept connections to frontend %v", frontendAddr)
 
 		if calculateThreshold(reqRespCandidate.NoOfAllRequests, thresholdOfClusterCalculation) {
-			go clusterPlot(reqRespCandidate, thresholdOfClusterCalculation)
-			go clusterPlot(reqRespPrimary, thresholdOfClusterCalculation)
-			go clusterPlot(reqRespSecondary, thresholdOfClusterCalculation)
+			go clusterPlot(reqRespPrimary, reqRespCandidate)
+			go clusterPlot(reqRespPrimary, reqRespSecondary)
 
 			resetC := &sir.RequestsResponse{
 				Backend: sir.Backend{Type: reqRespCandidate.Backend.Type, Addr: reqRespCandidate.Backend.Addr}}
@@ -83,12 +82,10 @@ func calculateThreshold(noOfRequests, threshold int) bool {
 	return (noOfRequests % threshold) == 0
 }
 
-func clusterPlot(reqResp *sir.RequestsResponse, threshold int) {
-	reqResp.L.Lock()
-	defer reqResp.L.Unlock()
-
-	reqResp.ClusterAndPlotRequests()
-	reqResp.ClusterAndPlotResponses()
+func clusterPlot(major *sir.RequestsResponse, minor *sir.RequestsResponse) {
+	major.L.Lock()
+	defer major.L.Unlock()
+	sir.ClusterAndPlotRequests(major, minor)
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {
