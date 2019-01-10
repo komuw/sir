@@ -3,10 +3,10 @@ package sir
 import (
 	"bytes"
 	"fmt"
+	"gonum.org/v1/gonum/mat"
 	"log"
 	"sync"
 	"time"
-	"gonum.org/v1/gonum/mat"
 )
 
 const NulByte = "\x00"
@@ -73,28 +73,9 @@ func (reqResp *RequestsResponse) HandleResponse(responseBuf []byte) {
 	reqResp.NoOfAllResponses++
 }
 
-
 // TODO: this should return error
-func ClusterAndPlotRequests(major *RequestsResponse, minor *RequestsResponse,backend string,ReqSlice [][]byte,LenLargestReq int, Allreqs []float64,NoallReqs int, nclusters int,X *mat.Dense ) {
-	start := time.Now()
+func PlotRequests(major *RequestsResponse, minor *RequestsResponse, backend string, ReqSlice [][]byte, LenLargestReq int, Allreqs []float64, NoallReqs int, nclusters int, X *mat.Dense) {
 	appendName := "Requests:" + backend
-
-	log.Println()
-	log.Println()
-	log.Printf("append took %v seconds", time.Since(start).Seconds())
-	log.Println()
-
-	start = time.Now()
-	
-	log.Println()
-	log.Println()
-	log.Printf("for loop took %v seconds", time.Since(start).Seconds())
-	log.Println()
-
-	log.Printf("lengthOfLargestRequest for backend %v %v", backend, LenLargestReq)
-	log.Printf("noOfAllRequests for backend %v %v ", backend, NoallReqs)
-	log.Printf("len(reqResp.AllRequests) for backend %v %v ", backend, len(Allreqs))
-	
 
 	proj := FindPCA(X, LenLargestReq)
 	err := PlotResultsPCA(NoallReqs, proj, nclusters, appendName)
