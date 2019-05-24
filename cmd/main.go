@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -84,8 +85,43 @@ func calculateThreshold(noOfRequests, threshold int) bool {
 
 func clusterPlot(major *sir.RequestsResponse, minor *sir.RequestsResponse) {
 	major.L.Lock()
-	defer major.L.Unlock()
-	sir.ClusterAndPlotRequests(major, minor)
+	backend := fmt.Sprintf("%v:and:%v", major.Backend, minor.Backend)
+	NoallReqs := major.NoOfAllRequests + minor.NoOfAllRequests
+	LenLargestReq := major.LengthOfLargestRequest
+	if major.LengthOfLargestRequest < minor.LengthOfLargestRequest {
+		LenLargestReq = minor.LengthOfLargestRequest
+	}
+	var ReqSlice [][]byte
+	ReqSlice = append(major.RequestsSlice, minor.RequestsSlice...)
+
+	for k, v := range ReqSlice {
+		// eliminate race condition of runtime.slicecopy
+		// bufCopy := make([]byte, len(v))
+		// copy(bufCopy, v)
+		diff := LenLargestReq - len(v)
+		if diff != 0 {
+			pad := bytes.Repeat([]byte(sir.NulByte), diff)
+			v = append(v, pad...)
+			ReqSlice[k] = v
+		}
+	}
+	var Allreqs []float64
+	for _, eachRequest := range ReqSlice {
+		for _, v := range eachRequest {
+			Allreqs = append(Allreqs, float64(v))
+		}
+	}
+	major.L.Unlock()
+
+	NoReqclusters, X, err := sir.GetClusters(NoallReqs, LenLargestReq, Allreqs, 3.0, 1.0, false)
+	if err != nil {
+		log.Fatalf("\n%+v", err)
+	}
+	log.Printf("\n\t Requests estimated number of clusters for backend %v: %d \n", backend, NoReqclusters)
+
+	_ = X
+	// TODO: plot clusters
+	// sir.PlotRequests(major, minor, backend, ReqSlice, LenLargestReq, Allreqs, NoallReqs, NoReqclusters, X)
 }
 
 func forward(frontendConn net.Conn, reqResp *sir.RequestsResponse, rb chan []byte) {

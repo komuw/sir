@@ -3,9 +3,9 @@ package sir
 import (
 	"bytes"
 	"fmt"
+	"gonum.org/v1/gonum/mat"
 	"log"
 	"sync"
-	"time"
 )
 
 const NulByte = "\x00"
@@ -73,59 +73,11 @@ func (reqResp *RequestsResponse) HandleResponse(responseBuf []byte) {
 }
 
 // TODO: this should return error
-func ClusterAndPlotRequests(major *RequestsResponse, minor *RequestsResponse) {
-	start := time.Now()
-
-	backend := fmt.Sprintf("%v:and:%v", major.Backend, minor.Backend)
+func PlotRequests(major *RequestsResponse, minor *RequestsResponse, backend string, ReqSlice [][]byte, LenLargestReq int, Allreqs []float64, NoallReqs int, nclusters int, X *mat.Dense) {
 	appendName := "Requests:" + backend
 
-	NoallReqs := major.NoOfAllRequests + minor.NoOfAllRequests
-	Allreqs := append(major.AllRequests, minor.AllRequests...)
-	LenLargestReq := major.LengthOfLargestRequest
-	if major.LengthOfLargestRequest < minor.LengthOfLargestRequest {
-		LenLargestReq = minor.LengthOfLargestRequest
-	}
-	ReqSlice := append(major.RequestsSlice, minor.RequestsSlice...)
-
-	log.Println()
-	log.Println()
-	log.Printf("append took %v seconds", time.Since(start).Seconds())
-	log.Println()
-
-	start = time.Now()
-	for k, v := range ReqSlice {
-		// eliminate race condition of runtime.slicecopy
-		// bufCopy := make([]byte, len(v))
-		// copy(bufCopy, v)
-
-		diff := LenLargestReq - len(v)
-		if diff != 0 {
-			pad := bytes.Repeat([]byte(NulByte), diff)
-			v = append(v, pad...)
-			ReqSlice[k] = v
-		}
-	}
-	for _, eachRequest := range ReqSlice {
-		for _, v := range eachRequest {
-			Allreqs = append(Allreqs, float64(v))
-		}
-	}
-	log.Println()
-	log.Println()
-	log.Printf("for loop took %v seconds", time.Since(start).Seconds())
-	log.Println()
-
-	log.Printf("lengthOfLargestRequest for backend %v %v", backend, LenLargestReq)
-	log.Printf("noOfAllRequests for backend %v %v ", backend, NoallReqs)
-	log.Printf("len(reqResp.AllRequests) for backend %v %v ", backend, len(Allreqs))
-	nclusters, X, err := GetClusters(NoallReqs, LenLargestReq, Allreqs, 3.0, 1.0, false)
-	if err != nil {
-		log.Fatalf("\n%+v", err)
-	}
-	log.Printf("Requests estimated number of clusters for backend %v: %d \n", backend, nclusters)
-
 	proj := FindPCA(X, LenLargestReq)
-	err = PlotResultsPCA(NoallReqs, proj, nclusters, appendName)
+	err := PlotResultsPCA(NoallReqs, proj, nclusters, appendName)
 	if err != nil {
 		log.Fatalf("\n%+v", err)
 	}
