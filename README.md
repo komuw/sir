@@ -46,7 +46,7 @@ The premise for Sir is that:
 
 #### debug
 ```bash
-go build -o sir cmd/main.go      
+go build -gcflags="all=-N -l" -o sir cmd/main.go      
 dlv exec ./sir      
 (dlv) help      
 (dlv) break pkg/sir.go:65 or break /Users/komuw/go/pkg/mod/github.com/hashicorp/yamux@v0.0.0-20181012175058-2f1d1f20f75d/session.go:212  
