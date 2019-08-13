@@ -49,7 +49,8 @@ The premise for Sir is that:
 go build -gcflags="all=-N -l" -o sir cmd/main.go      
 dlv exec ./sir      
 (dlv) help      
-(dlv) break pkg/sir.go:65 or break /Users/komuw/go/pkg/mod/github.com/hashicorp/yamux@v0.0.0-20181012175058-2f1d1f20f75d/session.go:212  
+(dlv) break pkg/sir.go:65
+(dlv) break /Users/komuw/go/pkg/mod/github.com/hashicorp/yamux@v0.0.0-20181012175058-2f1d1f20f75d/session.go:212  
 (dlv) continue
 ```
 or using mozilla rr;  
@@ -57,6 +58,7 @@ or using mozilla rr;
 go build -gcflags="all=-N -l" -o sir cmd/main.go
 rr record ./sir -arg1
 dlv replay /home/komuw/.local/share/rr/sir-0
+(dlv) help
 ```
 
 #### prior art
