@@ -52,6 +52,12 @@ dlv exec ./sir
 (dlv) break pkg/sir.go:65 or break /Users/komuw/go/pkg/mod/github.com/hashicorp/yamux@v0.0.0-20181012175058-2f1d1f20f75d/session.go:212  
 (dlv) continue
 ```
+or using mozilla rr;  
+```bash
+go build -gcflags="all=-N -l" -o sir cmd/main.go
+rr record ./sir -arg1
+dlv replay /home/komuw/.local/share/rr/sir-0
+```
 
 #### prior art
 1. https://github.com/twitter/diffy (https://github.com/opendiffy/diffy)     
