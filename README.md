@@ -60,6 +60,10 @@ rr record ./sir -arg1
 dlv replay /home/komuw/.local/share/rr/sir-0
 (dlv) help
 ```
+you can also insert `runtime.Breakpoint()` and then
+```bash
+dlv --init <(printf continue) debug main.go -- -someArg someArgValue # this one will auto-continue so that you just find yourself at the breakpoint
+```
 
 #### prior art
 1. https://github.com/twitter/diffy (https://github.com/opendiffy/diffy)     
