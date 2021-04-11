@@ -62,7 +62,7 @@ dlv replay /home/komuw/.local/share/rr/sir-0
 ```
 you can also insert `runtime.Breakpoint()` and then
 ```bash
-dlv --init <(printf continue) debug main.go -- -someArg someArgValue # this one will auto-continue so that you just find yourself at the breakpoint
+dlv --init <(printf continue) debug cmd/main.go -- -someArg someArgValue # this one will auto-continue so that you just find yourself at the breakpoint
 ```
 
 #### prior art
