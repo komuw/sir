@@ -65,6 +65,5 @@ func main() {
 
 /*
 debug:
-	go build -o heat sir/cmd/main.go
-	dlv exec ./heat
+	dlv debug cmd/main.go
 */
