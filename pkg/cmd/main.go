@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/komuw/sir/pkg"
+	sir "github.com/komuw/sir/pkg"
 )
 
 /*
@@ -66,4 +66,5 @@ func main() {
 /*
 debug:
 	dlv debug cmd/main.go
+	dlv --init <(printf break\ main.go:34\\ncontinue) debug cmd/main.go # this will set breakpoint and auto-ontinue
 */

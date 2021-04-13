@@ -64,6 +64,10 @@ you can also insert `runtime.Breakpoint()` and then
 ```bash
 dlv --init <(printf continue) debug cmd/main.go -- -someArg someArgValue # this one will auto-continue so that you just find yourself at the breakpoint
 ```
+or
+```bash
+dlv --init <(printf break\ main.go:34\\ncontinue) debug cmd/main.go # this will set breakpoint and auto-ontinue
+```
 
 #### prior art
 1. https://github.com/twitter/diffy (https://github.com/opendiffy/diffy)     
