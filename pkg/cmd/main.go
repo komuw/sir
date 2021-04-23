@@ -66,5 +66,6 @@ func main() {
 /*
 debug:
 	dlv debug cmd/main.go
-	dlv --init <(printf break\ main.go:34\\ncontinue) debug cmd/main.go # this will set breakpoint and auto-ontinue
+	dlv --init <(printf break\ main.go:34\\ncontinue) debug cmd/main.go # this will set breakpoint and auto-continue
+	dlv --init <(printf break\ segment.go:56\\ncontinue) test -- -test.timeout 30s -test.run ^TestNewSegment$
 */
