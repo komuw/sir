@@ -53,6 +53,10 @@ dlv exec ./sir
 (dlv) break /Users/komuw/go/pkg/mod/github.com/hashicorp/yamux@v0.0.0-20181012175058-2f1d1f20f75d/session.go:212  
 (dlv) continue
 ```
+```
+dlv --init <(printf break\ segment.go:56\\ncontinue) test -- -test.timeout 30s -test.run ^TestNewSegment$
+```
+
 or using mozilla rr;  
 ```bash
 go build -gcflags="all=-N -l" -o sir cmd/main.go
