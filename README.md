@@ -68,6 +68,7 @@ or
 ```bash
 dlv --init <(printf break\ main.go:34\\ncontinue) debug cmd/main.go # this will set breakpoint and auto-ontinue
 ```
+For using `delve` with `rr` see: http://choly.ca/post/debugging-go-with-rr/
 
 #### prior art
 1. https://github.com/twitter/diffy (https://github.com/opendiffy/diffy)     

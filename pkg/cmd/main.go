@@ -67,4 +67,5 @@ func main() {
 debug:
 	dlv debug cmd/main.go
 	dlv --init <(printf break\ main.go:34\\ncontinue) debug cmd/main.go # this will set breakpoint and auto-ontinue
+	For using `delve` with `rr` see: http://choly.ca/post/debugging-go-with-rr/
 */
