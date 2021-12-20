@@ -44,36 +44,6 @@ The premise for Sir is that:
 ```      
 
 
-#### debug
-```bash
-go build -gcflags="all=-N -l" -o sir cmd/main.go      
-dlv exec ./sir      
-(dlv) help      
-(dlv) break pkg/sir.go:65
-(dlv) break /Users/komuw/go/pkg/mod/github.com/hashicorp/yamux@v0.0.0-20181012175058-2f1d1f20f75d/session.go:212  
-(dlv) continue
-```
-```
-dlv --init <(printf break\ segment.go:56\\ncontinue) test -- -test.timeout 30s -test.run ^TestNewSegment$
-```
-
-or using mozilla rr;  
-```bash
-go build -gcflags="all=-N -l" -o sir cmd/main.go
-rr record ./sir -arg1
-dlv replay /home/komuw/.local/share/rr/sir-0
-(dlv) help
-```
-you can also insert `runtime.Breakpoint()` and then
-```bash
-dlv --init <(printf continue) debug cmd/main.go -- -someArg someArgValue # this one will auto-continue so that you just find yourself at the breakpoint
-```
-or
-```bash
-dlv --init <(printf break\ main.go:34\\ncontinue) debug cmd/main.go # this will set breakpoint and auto-ontinue
-```
-For using `delve` with `rr` see: http://choly.ca/post/debugging-go-with-rr/
-
 #### prior art
 1. https://github.com/twitter/diffy (https://github.com/opendiffy/diffy)     
 
