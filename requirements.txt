@@ -1,7 +1,7 @@
 # python3 -m venv .venv do not use virtualenv, see; https://matplotlib.org/faq/osx_framework.html
 
 matplotlib==3.0.2
-numpy==1.15.4
+numpy==1.22.0
 sklearn==0.0
 
 black==18.9b0
