@@ -4,7 +4,7 @@ matplotlib==3.0.2
 numpy==1.15.4
 sklearn==0.0
 
-black==18.9b0
+black==24.3.0
 flake8==3.6.0
 pylint==2.2.2
 pandas==0.23.4
